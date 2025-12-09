@@ -6,11 +6,11 @@
 //
 
 import SwiftUI
-import Combine
+
 
 struct InviteView: View {
     // Hier verbinden wir das ViewModel
-    @StateObject private var viewModel = InviteViewModel()
+    @State private var viewModel = InviteViewModel()
     
     var body: some View {
         NavigationStack {
@@ -20,7 +20,7 @@ struct InviteView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 15) {
                         // ForEach iteriert durch deine User im ViewModel
-                        ForEach(viewModel.activeUsers) { user in
+                        ForEach(viewModel.UserList) { user in
                             VStack {
                                 Circle()
                                     .fill(Color.blue.opacity(0.4))
@@ -40,7 +40,7 @@ struct InviteView: View {
                 Divider()
                 
                 // --- Sektion 2: Invite Liste (Vertikal) ---
-                List(viewModel.upcomingInvites) { invite in
+                List(viewModel.InviteList) { invite in
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text(invite.titel)

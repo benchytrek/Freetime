@@ -7,15 +7,16 @@
 
 import Foundation
 import SwiftUI
-import Combine
+import Observation
 
 // @MainActor sorgt dafür, dass UI-Updates immer auf dem Haupt-Thread passieren
 @MainActor
-class InviteViewModel: ObservableObject {
+@Observable
+class InviteViewModel {
     
-    // 1. Published Properties: Wenn sich diese ändern, lädt das UI neu
-    @Published var activeUsers: [User] = []
-    @Published var upcomingInvites: [Invite] = []
+    // Liste
+    var UserList: [User] = []
+    var InviteList: [Invite] = []
     
     init() {
         loadDummyData()
@@ -27,7 +28,7 @@ class InviteViewModel: ObservableObject {
         let anna = User(id: UUID(), name: "Anna")
         let tom = User(id: UUID(), name: "Tom")
         
-        self.activeUsers = [ben, anna, tom]
+        self.UserList = [ben, anna, tom]
         
         // Mock Invites
         let pizzaAbend = Invite(
@@ -53,6 +54,6 @@ class InviteViewModel: ObservableObject {
             ]
         )
         
-        self.upcomingInvites = [pizzaAbend, gymSession]
+        self.InviteList = [pizzaAbend, gymSession]
     }
 }
