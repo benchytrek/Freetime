@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SwipeSearchTestView: View {
+struct SwipDownTest: View {
     // MARK: - State
     @State private var isSearching: Bool = false
     @State private var searchText: String = ""
@@ -221,6 +221,6 @@ extension View {
 
 struct SwipeSearchTestView_Previews: PreviewProvider {
     static var previews: some View {
-        SwipeSearchTestView()
+        SwipDownTest()
     }
 }
