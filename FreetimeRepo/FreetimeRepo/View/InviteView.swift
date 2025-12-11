@@ -11,57 +11,156 @@ struct InviteView: View {
     @State private var viewModel = InviteViewModel()
     @State private var selectedInvite: Invite?
     
+    // --- SCROLL STEUERUNG ---
+    @State private var scrollOffset: CGFloat = 0
+    @State private var showCreateSheet = false
+    
+    // Konfiguration
+    private let triggerHeight: CGFloat = 100.0 // Ab hier wird ausgelöst
+    private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+    @State private var hasTriggered = false // Verhindert mehrfaches Feuern
+    
     var body: some View {
         NavigationStack {
-                // --- Sektion 2: Invite Liste ---
-                ScrollView {
-                    VStack(spacing: 1) {
+            ZStack(alignment: .top) {
+                
+                // 1. HINTERGRUND & ACTION INDICATOR
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
+                // Der Indicator, der hinter der Liste sichtbar wird
+                if scrollOffset > 0 {
+                    ZStack {
+                        // Dynamischer Kreis
+                        Circle()
+                            .fill(scrollOffset > triggerHeight ? Color.blue : Color.gray.opacity(0.3))
+                            .frame(width: 45, height: 45)
+                            .shadow(radius: 5)
+                            .animation(.snappy, value: scrollOffset > triggerHeight)
                         
-                        Spacer()
-                        
-                        Text("Freetime - Invite")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                            .padding()
-                            .padding(.top, 20)
-                            .padding(.bottom, 10)
-                            //.background(Color(.systemGray6))
-                            //.cornerRadius(10)
-                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 20)
-                            //.animation()
-                        
-                        Spacer()
-                        
-                        ForEach(viewModel.InviteList) { invite in
-                            InviteCardView(invite: invite)
-                                .onTapGesture {
-                                    //  angetippte Invite in den State
-                                    self.selectedInvite = invite
-                                }
-                        }
-                        
-                    
-                    .padding(8)
+                        // Icon wechselt
+                        Image(systemName: scrollOffset > triggerHeight ? "plus" : "arrow.down")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(scrollOffset > triggerHeight ? .white : .secondary)
+                            .contentTransition(.symbolEffect(.replace))
+                    }
+                    // Positioniert sich dynamisch basierend auf dem Pull
+                    .offset(y: 60 + (scrollOffset * 0.5))
+                    .opacity(Double(min(scrollOffset / 60.0, 1.0)))
+                    .scaleEffect(scrollOffset > triggerHeight ? 1.2 : 1.0)
                 }
+                
+                // 2. SCROLLVIEW MIT MESSUNG
+                ScrollView {
+                    VStack(spacing: 0) {
+                        
+                        // --- MESS-SENSOR (KORRIGIERT) ---
+                        // Wir platzieren ihn als Overlay über einem unsichtbaren Frame ganz oben.
+                        // Das ist robuster als GeometryReader direkt im Flow.
+                        Color.clear.frame(height: 0)
+                            .background(
+                                GeometryReader { proxy in
+                                    Color.clear.preference(
+                                        key: ScrollOffsetKey.self,
+                                        value: proxy.frame(in: .named("scrollSpace")).minY
+                                    )
+                                }
+                            )
+                        
+                        
+                        // Header Area
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Freetime")
+                                .font(.system(size: 34, weight: .bold))
+                                .foregroundStyle(.primary)
+                            
+                            Text("Invites")
+                                .font(.title3.bold())
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 60)
+                        
+                        // White Space (Apple Style) - Optional, falls du den Abstand willst
+                        Color.clear.frame(height: 40)
+                        
+                        // Die eigentliche Liste
+                        LazyVStack(spacing: 16) {
+                            ForEach(viewModel.InviteList) { invite in
+                                InviteCardView(invite: invite)
+                                    .onTapGesture {
+                                        self.selectedInvite = invite
+                                    }
+                                    .padding(.horizontal, 16)
+                            }
+                        }
+                        .padding(.bottom, 50)
+                    }
+                }
+                // WICHTIG: Koordinatenraum benennen
+                .coordinateSpace(name: "scrollSpace")
+                // Auf Änderungen des ScrollOffsets reagieren
+                .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                    handleScrollUpdate(offset: offset)
+                }
+                .scrollIndicators(.hidden)
             }
-            //.navigationTitle("Free Time")
-            .background(Color(.systemGroupedBackground))
             
-            // NEU: Der Sheet Modifier
-            // Er beobachtet 'selectedInvite'. Sobald es nicht nil ist, geht das Sheet auf.
+            // --- SHEETS ---
+            
+            // Detail Sheet
             .sheet(item: $selectedInvite) { invite in
                 InviteDetailView(invite: invite)
-                    // WICHTIG: Hier definieren wir die "Snap Points" (Detents)
-                    // .fraction(0.35) -> Startet bei ca. 1/3 des Bildschirms
-                    // .large -> Kann auf Vollbild hochgezogen werden
                     .presentationDetents([.fraction(0.40), .large])
-                    // Zeigt den kleinen grauen Balken oben an, damit User wissen, dass man ziehen kann
                     .presentationDragIndicator(.visible)
-                    // Background Material für den modernen "Glass" Look (optional)
                     .presentationBackground(.ultraThinMaterial)
             }
+            
+            // Create Sheet (Getriggert durch Pull)
+            .sheet(isPresented: $showCreateSheet) {
+                InviteCreateView()
+            }
         }
+    }
+    
+    // MARK: - Logik
+    private func handleScrollUpdate(offset: CGFloat) {
+        self.scrollOffset = offset
+        
+        // DEBUG: Ausgabe in die Konsole
+        if offset > 0 {
+            print("👇 Pull Offset: \(Int(offset)) / Trigger: \(Int(triggerHeight))")
+        }
+        
+        // Trigger Logik
+        if offset > triggerHeight {
+            if !hasTriggered && !showCreateSheet {
+                print("✅ TRIGGER ACTIVATED! Opening Sheet...")
+                // Aktion auslösen
+                feedbackGenerator.impactOccurred()
+                hasTriggered = true
+                
+                // Sheet öffnen (leicht verzögert für besseres Gefühl)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    showCreateSheet = true
+                }
+            }
+        } else {
+            // Reset Trigger, wenn man weit genug zurückscrollt
+            if offset < 50 {
+                if hasTriggered { print("🔄 Trigger Reset") }
+                hasTriggered = false
+            }
+        }
+    }
+}
+
+// MARK: - Preference Key Helper
+struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue() // Wir nehmen einfach den neuesten Wert
     }
 }
 
