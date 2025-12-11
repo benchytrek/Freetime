@@ -8,57 +8,59 @@
 import SwiftUI
 
 struct InviteView: View {
-    // Hier verbinden wir das ViewModel
-    // Das ViewModel lädt im init() bereits deine Dummy-Daten (Pizza & Gym)
     @State private var viewModel = InviteViewModel()
+    @State private var selectedInvite: Invite?
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) { // Spacing auf 0, wir regeln Abstände mit Padding
-                
-                // --- Sektion 1: User Bubbles (Horizontal) ---
-                // Bleibt wie gehabt, sieht super aus
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 15) {
-                        ForEach(viewModel.UserList) { user in
-                            VStack {
-                                Circle()
-                                    .fill(Color.blue.opacity(0.1)) // Leichterer Blue Tone für Clean Look
-                                    .frame(width: 60, height: 60)
-                                    .overlay(
-                                        Text(user.name.prefix(1))
-                                            .font(.title3.bold())
-                                            .foregroundStyle(.blue)
-                                    )
-                                
-                                Text(user.name)
-                                    .font(.caption)
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                    }
-                    .padding() // Padding rundherum für die ScrollView
-                }
-                
-                Divider()
-                    .padding(.bottom, 10)
-                
-                // --- Sektion 2: Invite Liste (Vertikal) ---
-                // Hier ist die Änderung: ScrollView + ForEach für die Liste
+                // --- Sektion 2: Invite Liste ---
                 ScrollView {
-                    VStack(spacing: 16) { // Abstand zwischen den Karten
+                    VStack(spacing: 1) {
                         
-                        // Wir gehen durch ALLE Invites im ViewModel
+                        Spacer()
+                        
+                        Text("Freetime - Invite")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                            .padding()
+                            .padding(.top, 20)
+                            .padding(.bottom, 10)
+                            //.background(Color(.systemGray6))
+                            //.cornerRadius(10)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 20)
+                            //.animation()
+                        
+                        Spacer()
+                        
                         ForEach(viewModel.InviteList) { invite in
                             InviteCardView(invite: invite)
+                                .onTapGesture {
+                                    //  angetippte Invite in den State
+                                    self.selectedInvite = invite
+                                }
                         }
                         
-                    }
-                    .padding() // Abstand zum Bildschirmrand (Links/Rechts/Unten)
+                    
+                    .padding(8)
                 }
             }
-            .navigationTitle("Free Time")
-            .background(Color(.systemGroupedBackground)) // Grauer Hintergrund für die App, damit die weißen Karten poppen
+            //.navigationTitle("Free Time")
+            .background(Color(.systemGroupedBackground))
+            
+            // NEU: Der Sheet Modifier
+            // Er beobachtet 'selectedInvite'. Sobald es nicht nil ist, geht das Sheet auf.
+            .sheet(item: $selectedInvite) { invite in
+                InviteDetailView(invite: invite)
+                    // WICHTIG: Hier definieren wir die "Snap Points" (Detents)
+                    // .fraction(0.35) -> Startet bei ca. 1/3 des Bildschirms
+                    // .large -> Kann auf Vollbild hochgezogen werden
+                    .presentationDetents([.fraction(0.40), .large])
+                    // Zeigt den kleinen grauen Balken oben an, damit User wissen, dass man ziehen kann
+                    .presentationDragIndicator(.visible)
+                    // Background Material für den modernen "Glass" Look (optional)
+                    .presentationBackground(.ultraThinMaterial)
+            }
         }
     }
 }
