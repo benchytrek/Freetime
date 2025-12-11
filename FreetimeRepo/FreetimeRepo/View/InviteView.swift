@@ -7,25 +7,29 @@
 
 import SwiftUI
 
-
 struct InviteView: View {
     // Hier verbinden wir das ViewModel
+    // Das ViewModel lädt im init() bereits deine Dummy-Daten (Pizza & Gym)
     @State private var viewModel = InviteViewModel()
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 0) { // Spacing auf 0, wir regeln Abstände mit Padding
                 
                 // --- Sektion 1: User Bubbles (Horizontal) ---
+                // Bleibt wie gehabt, sieht super aus
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 15) {
-                        // ForEach iteriert durch deine User im ViewModel
                         ForEach(viewModel.UserList) { user in
                             VStack {
                                 Circle()
-                                    .fill(Color.blue.opacity(0.4))
+                                    .fill(Color.blue.opacity(0.1)) // Leichterer Blue Tone für Clean Look
                                     .frame(width: 60, height: 60)
-                                    .overlay(Text(user.name.prefix(1)).bold()) // Erster Buchstabe
+                                    .overlay(
+                                        Text(user.name.prefix(1))
+                                            .font(.title3.bold())
+                                            .foregroundStyle(.blue)
+                                    )
                                 
                                 Text(user.name)
                                     .font(.caption)
@@ -33,67 +37,29 @@ struct InviteView: View {
                             }
                         }
                     }
-                    .padding(.horizontal)
+                    .padding() // Padding rundherum für die ScrollView
                 }
-                .padding(.top)
                 
                 Divider()
+                    .padding(.bottom, 10)
                 
                 // --- Sektion 2: Invite Liste (Vertikal) ---
-                List(viewModel.InviteList) { invite in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text(invite.titel)
-                                .font(.headline)
-                            Spacer()
-                            // Datum formatieren (Apple Style)
-                            Text(invite.date.formatted(.dateTime.weekday().hour().minute()))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                // Hier ist die Änderung: ScrollView + ForEach für die Liste
+                ScrollView {
+                    VStack(spacing: 16) { // Abstand zwischen den Karten
+                        
+                        // Wir gehen durch ALLE Invites im ViewModel
+                        ForEach(viewModel.InviteList) { invite in
+                            InviteCardView(invite: invite)
                         }
                         
-                        Text(invite.description)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        
-                        // Kleine Vorschau der Teilnehmer
-                        HStack {
-                            ForEach(invite.attendees.prefix(3)) { attendee in
-                                StatusCircle(status: attendee.status)
-                            }
-                            if invite.attendees.count > 3 {
-                                Text("+\(invite.attendees.count - 3)")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                        }
                     }
-                    .padding(.vertical, 4)
+                    .padding() // Abstand zum Bildschirmrand (Links/Rechts/Unten)
                 }
-                .listStyle(.plain) // Clean Look
             }
-            .navigationTitle("Freetime")
+            .navigationTitle("Free Time")
+            .background(Color(.systemGroupedBackground)) // Grauer Hintergrund für die App, damit die weißen Karten poppen
         }
-    }
-}
-
-// Kleine Hilfs-View für den Status-Punkt (UI Component)
-struct StatusCircle: View {
-    let status: InvitationAnswer
-    
-    var color: Color {
-        switch status {
-        case .yes: return .green
-        case .no: return .red
-        case .maybe: return .orange
-        case .pending: return .gray
-        }
-    }
-    
-    var body: some View {
-        Circle()
-            .fill(color)
-            .frame(width: 10, height: 10)
     }
 }
 

@@ -14,7 +14,6 @@ struct Invite: Identifiable, Codable {
     var description: String
     var date: Date
     
-    // Anstatt list<tuple>, nutzen wir ein Array von Custom Structs
     var attendees: [InviteAttendee]
 }
 

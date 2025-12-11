@@ -10,82 +10,121 @@ import SwiftUI
 struct InviteCardView: View {
     let invite: Invite
     
+    // --- KONFIGURATION ---
+    // Unsere Timeline geht von 8 bis 22 Uhr (14 Stunden)
+    private let startHour: Double = 8.0
+    private let endHour: Double = 22.0
+    
     var body: some View {
-        HStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             
-            // 1. LINKER BEREICH: Host Avatar (Groß)
-            // Da wir noch keine Bilder haben, nutzen wir Initialen
-            Circle()
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 60, height: 60)
-                .overlay(
-                    // Zeigt den ersten Buchstaben des Titels als "Host" Dummy
-                    Text(invite.titel.prefix(1))
-                        .font(.title2.bold())
-                        .foregroundStyle(.secondary)
-                )
-                // Optional: Falls du echte Bilder hast:
-                // AsyncImage(url: invite.host.avatarURL) ...
-            
-            // 2. MITTLERER BEREICH: Info & Time Bar
-            VStack(alignment: .leading, spacing: 6) {
-                Text(invite.titel)
-                    .font(.headline) // Fett gedruckt wie im Bild "Laufen"
-                    .lineLimit(1)
+            // --- OBERER BEREICH: Host, Titel & Avatare ---
+            // (Bleibt genau so clean wie vorher)
+            HStack(alignment: .top) {
                 
-                // Der Time-Bar (Grüner Balken im grauen Feld)
-                ZStack(alignment: .leading) {
-                    // Hintergrund (Grau)
-                    Capsule()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 8)
+                // 1. Host Bild
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Text(invite.titel.prefix(1))
+                            .font(.title3.bold())
+                            .foregroundStyle(.secondary)
+                    )
+                
+                // 2. Text Infos
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(invite.titel)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
                     
-                    // Füllung (Grün) - Dummy Wert 60% gefüllt
-                    Capsule()
-                        .fill(Color.green)
-                        .frame(width: 10, height: 8) // Statisch für Demo, später dynamisch berechnen
+                    Text(invite.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
                 
-                // Zeit Text (z.B. "17:00 - 18:00")
+                Spacer()
+                
+                // 3. Avatare
+                HStack(spacing: -12) {
+                    ForEach(invite.attendees.prefix(3)) { attendee in
+                        UserAvatar(attendee: attendee)
+                    }
+                    if invite.attendees.count > 3 {
+                        Circle()
+                            .fill(Color(.systemGray5))
+                            .frame(width: 32, height: 32)
+                            .overlay(
+                                Text("+\(invite.attendees.count - 3)")
+                                    .font(.caption2.bold())
+                            )
+                            .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                    }
+                }
+            }
+            
+            // --- UNTERER BEREICH: Smarte Time Bar ---
+            VStack(alignment: .trailing, spacing: 1) {
+                
+                // Uhrzeit Text
                 Text("\(invite.date.formatted(date: .omitted, time: .shortened)) - \(invite.date.addingTimeInterval(3600).formatted(date: .omitted, time: .shortened))")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
-            }
-            
-            Spacer()
-            
-            // 3. RECHTER BEREICH: Gestapelte Avatare mit Status-Rahmen
-            HStack(spacing: -12) { // Negatives Spacing sorgt für den Überlappungs-Effekt
-                ForEach(invite.attendees.prefix(3)) { attendee in
-                    UserAvatar(attendee: attendee)
-                }
                 
-                // Falls mehr als 3 Leute kommen, zeige "+X"
-                if invite.attendees.count > 3 {
-                    Circle()
-                        .fill(Color(.systemGray5))
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Text("+\(invite.attendees.count - 3)")
-                                .font(.caption2.bold())
-                        )
-                        .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                // Logik-Wrapper für den Balken
+                GeometryReader { proxy in
+                    // 1. Wie breit ist die ganze Box in Pixeln?
+                    let totalWidth = proxy.size.width
+                    
+                    // 2. Wie breit ist EINE Stunde in Pixeln?
+                    // Gesamtzeit = 22 - 8 = 14 Stunden
+                    let pixelsPerHour = totalWidth / (endHour - startHour)
+                    
+                    // 3. Wann startet das Event? (z.B. 13:30 Uhr)
+                    let calendar = Calendar.current
+                    let eventHour = Double(calendar.component(.hour, from: invite.date))
+                    let eventMinute = Double(calendar.component(.minute, from: invite.date)) / 60.0
+                    let eventTime = eventHour + eventMinute
+                    
+                    // 4. Offset berechnen: Wie viele Stunden nach 8 Uhr geht es los?
+                    // "max(0, ...)" verhindert Fehler, falls ein Termin mal um 7 Uhr ist
+                    let offsetHours = max(0, eventTime - startHour)
+                    let xPosition = offsetHours * pixelsPerHour
+                    
+                    // 5. Breite berechnen: Dauer * PixelProStunde
+                    // Aktuell nehmen wir statisch 1 Stunde an (1.0)
+                    let eventDuration = 1.0
+                    let width = eventDuration * pixelsPerHour
+                    
+                    ZStack(alignment: .leading) {
+                        // Hintergrund (8-22 Uhr)
+                        Capsule()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 8)
+                        
+                        // Meeting Balken (Grün)
+                        Capsule()
+                            .fill(Color.green)
+                            .frame(width: width, height: 8) // Dynamische Breite
+                            .offset(x: xPosition)           // Dynamische Position
+                    }
                 }
+                .frame(height: 8) // WICHTIG: Begrenzt die Höhe des GeometryReaders
             }
         }
-        .padding()
-        .background(Color(.secondarySystemBackground)) // Das helle Grau der Karte
-        .clipShape(RoundedRectangle(cornerRadius: 16)) // Runde Ecken
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2) // Leichter Schatten
+        .padding(16)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
 
-// Hilfs-View für die runden Avatare mit Rahmen
+// Helper für Avatar (bleibt gleich)
 struct UserAvatar: View {
     let attendee: InviteAttendee
-    
-    // Logik für die Rahmenfarbe
     var statusColor: Color {
         switch attendee.status {
         case .yes: return .green
@@ -94,41 +133,42 @@ struct UserAvatar: View {
         case .pending: return .gray.opacity(0.3)
         }
     }
-    
     var body: some View {
         ZStack {
-            // Hintergrund (Avatar)
             Circle()
                 .fill(Color.blue.opacity(0.2))
                 .frame(width: 32, height: 32)
-                .overlay(
-                    Text(attendee.user.name.prefix(1)) // Initiale
-                        .font(.caption.bold())
-                        .foregroundStyle(.blue)
-                )
-            
-            // Der Status-Rahmen (Ring)
-            Circle()
-                .strokeBorder(statusColor, lineWidth: 2) // Hier ist die Logik!
-                .frame(width: 32, height: 32)
+                .overlay(Text(attendee.user.name.prefix(1)).font(.caption.bold()).foregroundStyle(.blue))
+            Circle().strokeBorder(statusColor, lineWidth: 2).frame(width: 32, height: 32)
         }
-        // Weißer Rand außenrum, damit sie sich beim Überlappen sauber trennen
         .background(Circle().fill(Color(.systemBackground)).frame(width: 36, height: 36))
     }
 }
 
-// Preview, damit du es sofort siehst
+// Preview
 #Preview {
-    InviteCardView(invite: Invite(
-        id: UUID(),
-        titel: "Laufen",
-        description: "Test",
-        date: Date(),
-        attendees: [
-            InviteAttendee(user: User(id: UUID(), name: "Ben"), status: .yes),
-            InviteAttendee(user: User(id: UUID(), name: "Anna"), status: .no),
-            InviteAttendee(user: User(id: UUID(), name: "Tom"), status: .maybe)
-        ]
-    ))
+    let ben = User(id: UUID(), name: "Ben")
+    
+    VStack(spacing: 20) {
+        // Test 1: Früh am Morgen (Ganz links)
+        InviteCardView(invite: Invite(
+            id: UUID(),
+            titel: "Titel",
+            description: "Description",
+            date: Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!,
+            attendees: [InviteAttendee(user: ben, status: .yes)
+                       // InviteAttendee(user: anna, status: .no)
+                       ]
+        ))
+        
+        // Test 2: Mitten am Tag (Mitte)
+        InviteCardView(invite: Invite(
+            id: UUID(),
+            titel: "Mittagessen",
+            description: "Pizza",
+            date: Calendar.current.date(bySettingHour: 15, minute: 0, second: 0, of: Date())!, // 15 Uhr = 3 PM
+            attendees: [InviteAttendee(user: ben, status: .yes)]
+        ))
+    }
     .padding()
 }
