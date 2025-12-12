@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "ft_icon_trash3.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -12,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "ft_icon_trash.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -23,6 +25,7 @@
           "value" : "tinted"
         }
       ],
+      "filename" : "appicon2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

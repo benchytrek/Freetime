@@ -21,6 +21,10 @@ struct ContentView: View {
                     // Hier wird gebaut/getestet.
                     Label("Test", systemImage: "hammer.fill")
                 }
+            HapticTest()
+                .tabItem {
+                    Label("Haptic", systemImage: "hand.draw.fill")
+                }
         }
         // Ein kleiner 'tint' sorgt für das moderne iOS-Feeling passend zu deiner CI
         // Definiert in deinen Assets als 'AccentColor'[cite: 42].

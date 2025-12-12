@@ -2,225 +2,218 @@ import SwiftUI
 
 struct SwipDownTest: View {
     // MARK: - State
-    @State private var isSearching: Bool = false
-    @State private var searchText: String = ""
-    @State private var dragOffset: CGFloat = 0
-    @FocusState private var isInputFocused: Bool
+    @State private var scrollOffset: CGFloat = 0
+    @State private var showCreateSheet: Bool = false
+    @State private var hasTriggeredHaptic: Bool = false // Verhindert Dauer-Vibration
+    @State private var isReadyToTrigger: Bool = false // Status: Bereit zum Feuern?
     
-    // MARK: - Constants & Config
-    private let threshold: CGFloat = 120 // Punkt, ab dem die Suche einrastet
-    private let maxDrag: CGFloat = 250
+    // MARK: - Config
+    private let pullThreshold: CGFloat = 110 // Schwelle für "Bereit"
     
-    // Farben aus dem Video (Cyan/Türkis zu Pfirsich/Orange)
-    let gradientColors = Gradient(colors: [
-        Color(red: 0.4, green: 0.9, blue: 0.9), // Cyan/Türkis
-        Color(red: 1.0, green: 0.8, blue: 0.6)  // Pfirsich/Orange
-    ])
+    // Gradient für den Create Button
+    let createGradient = LinearGradient(
+        gradient: Gradient(colors: [
+            Color(red: 0.4, green: 0.9, blue: 0.9), // Cyan/Türkis
+            Color(red: 1.0, green: 0.8, blue: 0.6)  // Pfirsich/Orange
+        ]),
+        startPoint: .leading,
+        endPoint: .trailing
+    )
     
     var body: some View {
         ZStack(alignment: .top) {
-            
-            // 1. HINTERGRUND
             Color.white.ignoresSafeArea()
             
-            // 2. SEARCH PILL (Der "Liquid" Layer)
-            // Sie liegt technisch "hinter" oder "über" dem Content, je nach gewünschtem Effekt.
-            // Im Video wirkt es so, als würde sie enthüllt werden.
-            GeometryReader { geo in
-                let progress = min(max(dragOffset / threshold, 0), 1.0)
-                
-                // Dynamische Breite und Position
-                let searchBarWidth = isSearching ? geo.size.width - 40 : 120 + (progress * 150)
-                let searchBarHeight: CGFloat = 55
-                
-                // Y-Position:
-                // Dragging: Bewegt sich mit dem Finger, aber etwas langsamer (Parallax)
-                // Searching: Fixiert auf Position 60
-                let yPos = isSearching ? 60 : -50 + (dragOffset * 0.5)
-                
+            // 1. DYNAMISCHER HEADER (HINTER DER LISTE)
+            VStack {
                 ZStack {
-                    if dragOffset > 10 || isSearching {
-                        RoundedRectangle(cornerRadius: 28, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    gradient: gradientColors,
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            // "Liquid Glass" Shadow
-                            .shadow(color: Color.orange.opacity(0.3), radius: 15, x: 0, y: 10)
-                            .frame(width: searchBarWidth, height: searchBarHeight)
-                            .overlay(
-                                // Inhalt der Search Bar
-                                ZStack {
-                                    if isSearching {
-                                        // Aktiver Such-Modus
-                                        HStack {
-                                            Image(systemName: "magnifyingglass")
-                                                .foregroundColor(.white.opacity(0.7))
-                                            
-                                            TextField("", text: $searchText)
-                                                .placeholder(when: searchText.isEmpty) {
-                                                    Text("Typeee......").foregroundColor(.white.opacity(0.6))
-                                                }
-                                                .focused($isInputFocused)
-                                                .foregroundColor(.white)
-                                                .submitLabel(.search)
-                                                .onSubmit { closeSearch() }
-                                            
-                                            Button(action: closeSearch) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.white.opacity(0.8))
-                                            }
-                                        }
-                                        .padding(.horizontal, 20)
-                                        .transition(.opacity)
-                                    } else {
-                                        // Während dem Ziehen (Optionaler Text oder leer lassen für Clean Look)
-                                        Text("Search")
-                                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                                            .foregroundColor(.white.opacity(progress))
-                                            .opacity(progress > 0.6 ? 1 : 0)
-                                    }
-                                }
-                            )
-                            .position(x: geo.size.width / 2, y: yPos)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isSearching)
-                            .animation(.interactiveSpring(), value: dragOffset)
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(createGradient)
+                        .shadow(color: Color.orange.opacity(0.3), radius: 15, x: 0, y: 8)
+                    
+                    HStack(spacing: 12) {
+                        Image(systemName: isReadyToTrigger ? "arrow.up.circle.fill" : "plus.circle.fill")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.white)
+                            // Dreht sich, wenn bereit zum Loslassen
+                            .rotationEffect(.degrees(isReadyToTrigger ? 180 : 0))
+                            .scaleEffect(isReadyToTrigger ? 1.2 : 1.0)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isReadyToTrigger)
+                        
+                        Text(isReadyToTrigger ? "Loslassen zum Erstellen" : "Ziehen für neues Event")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .contentTransition(.numericText()) // Cooler Effekt beim Textwechsel (iOS 16+)
+                    }
+                }
+                .frame(height: 80)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                
+                // Parallax & Opacity Logik
+                .offset(y: (scrollOffset * 0.7))
+                .opacity(min(Double(scrollOffset) / 80.0, 1.0))
+                .scaleEffect(isReadyToTrigger ? 1.05 : 0.95)
+                .animation(.interactiveSpring(), value: scrollOffset)
+                
+                Spacer()
+            }
+            .padding(.top, 50)
+            .ignoresSafeArea()
+            
+            // 2. SCROLL CONTENT
+            ScrollView {
+                ZStack(alignment: .top) {
+                    // Unsichtbarer Offset-Tracker
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(key: ScrollOffsetPreferenceKey.self, value: geo.frame(in: .named("scroll")).minY)
+                    }
+                    .frame(height: 0) // Keine Höhe, nur Tracker
+                    
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Header Title "Invites"
+                        Text("Invites")
+                            .font(.system(size: 40, weight: .heavy, design: .default))
+                            .foregroundColor(.black)
+                            .padding(.top, 40)
+                            .padding(.horizontal, 20)
+                            .opacity(max(0, 1.0 - (Double(scrollOffset) / 100.0)))
+                            .blur(radius: scrollOffset > 50 ? 5 : 0)
+                        
+                        // Mock-Liste
+                        LazyVStack(spacing: 16) {
+                            ForEach(1...15, id: \.self) { index in
+                                InviteRow(index: index)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 50)
                     }
                 }
             }
-            .zIndex(2) // Liegt über der Liste
-            
-            // 3. CONTENT LAYER (Liste mit Header "Invites")
-            VStack(alignment: .leading, spacing: 100) {
+            .coordinateSpace(name: "scroll")
+            // Hier passiert die gesamte Logik
+            .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                // Glätten kleiner negativer Bounces
+                let currentOffset = value > 0 ? value : 0
                 
-                // Header Title
-                Text("Invites")
-                    .font(.system(size: 40, weight: .bold, design: .default))
-                    .foregroundColor(Color(UIColor.label))
-                    .padding(.top, 60)
-                    .padding(.horizontal, 20)
-                    .opacity(isSearching ? 0 : 1) // Fadet aus beim Suchen
-                    .blur(radius: isSearching ? 10 : 0)
-                
-                // Simulierter Listen-Inhalt (Placeholder Rows aus dem Video)
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: 15) {
-                        ForEach(0..<15) { i in
-                            HStack(spacing: 15) {
-                                Circle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 50, height: 50)
-                                
-                                VStack(alignment: .leading, spacing: 8) {
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(width: 150, height: 12)
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(Color.gray.opacity(0.15))
-                                        .frame(width: 100, height: 12)
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(16)
-                        }
-                        
-                        // Spacer am Ende
-                        Color.clear.frame(height: 50)
-                    }
-                    .padding(.horizontal, 20)
+                // Wenn wir gerade loslassen (Offset springt schnell zurück), prüfen wir Trigger
+                // Ein drastischer Abfall deutet auf "Loslassen" hin, aber wir nutzen hier den Status 'isReadyToTrigger'
+                if currentOffset < pullThreshold && isReadyToTrigger {
+                    // Wir waren bereit und der Offset fällt -> User hat losgelassen!
+                    triggerCreateAction()
+                    isReadyToTrigger = false // Reset
                 }
-                // .scrollDisabled(true) <-- ENTFERNT, damit man scrollen kann
-                .opacity(isSearching ? 0 : 1) // Liste verschwindet beim Suchen
-                .blur(radius: isSearching ? 10 : 0)
-            }
-            // Die gesamte Liste bewegt sich nach unten
-            .offset(y: isSearching ? 0 : dragOffset)
-            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isSearching)
-            
-            // GESTURE HANDLER (Über dem ganzen Screen)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        guard !isSearching else { return }
-                        let translation = value.translation.height
+                
+                self.scrollOffset = currentOffset
+                
+                // PRÜFEN: SIND WIR ÜBER DER GRENZE?
+                if currentOffset > pullThreshold {
+                    if !isReadyToTrigger {
+                        // Statuswechsel: Jetzt bereit!
+                        isReadyToTrigger = true
                         
-                        if translation > 0 {
-                            // Logarithmischer Widerstand (Gummiband)
-                            // pow(Double(translation), 0.85) macht es "schwerer", je weiter man zieht
-                            dragOffset = CGFloat(pow(Double(translation), 0.85)) * 1.5
-                        }
+                        // TACK! (Einmaliges Haptic Feedback beim Überschreiten)
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.prepare()
+                        generator.impactOccurred()
                     }
-                    .onEnded { value in
-                        guard !isSearching else { return }
-                        
-                        if dragOffset > threshold {
-                            triggerSearch()
-                        } else {
-                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                dragOffset = 0
-                            }
-                        }
+                } else {
+                    // Unter der Grenze -> Nicht bereit
+                    if isReadyToTrigger && currentOffset < (pullThreshold - 10) {
+                        // Kleine Hysterese (10pt), damit es nicht flackert
+                        isReadyToTrigger = false
                     }
-            )
-            
-            // Abbrechen-Area (Wenn man sucht, kann man unten tippen zum Schließen)
-            if isSearching {
-                Color.white.opacity(0.01)
-                    .padding(.top, 150)
-                    .onTapGesture {
-                        closeSearch()
-                    }
+                }
             }
+        }
+        .sheet(isPresented: $showCreateSheet) {
+            CreateInviteMockView()
         }
     }
     
-    // MARK: - Logic
-    
-    func triggerSearch() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+    // MARK: - Actions
+    func triggerCreateAction() {
+        // Erfolg-Haptik (Vibration)
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(.success)
         
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-            isSearching = true
-            dragOffset = 0 // Reset drag, Pill geht auf feste Position
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            isInputFocused = true
-        }
+        showCreateSheet = true
     }
+}
+
+// MARK: - Subviews & Helpers
+
+struct InviteRow: View {
+    let index: Int
+    var body: some View {
+        HStack(spacing: 15) {
+            // Avatar Placeholder
+            Circle()
+                .fill(LinearGradient(colors: [.gray.opacity(0.3), .gray.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: 50, height: 50)
+                .overlay(Text("\(index)").font(.caption).bold().foregroundColor(.gray))
+            
+            VStack(alignment: .leading, spacing: 8) {
+                // Name Placeholder
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.primary.opacity(0.8))
+                    .frame(width: 120, height: 16)
+                
+                // Detail Placeholder
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.primary.opacity(0.2))
+                    .frame(width: 80, height: 12)
+            }
+            Spacer()
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(20)
+        // Schatten für Tiefe (wie im Video Design)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+    }
+}
+
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+struct CreateInviteMockView: View {
+    @Environment(\.dismiss) var dismiss
     
-    func closeSearch() {
-        isInputFocused = false
-        searchText = ""
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-            isSearching = false
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                Spacer()
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 70))
+                    .foregroundStyle(LinearGradient(colors: [.cyan, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .symbolEffect(.bounce, value: true) // iOS 17 Animation
+                
+                Text("Neues Event erstellen")
+                    .font(.title2.bold())
+                
+                Text("Hier kommt dein Flow hin.\nZeit Freunde einzuladen!")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .navigationTitle("Erstellen")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen") { dismiss() }
+                }
+            }
         }
     }
 }
 
-// Helper
-extension View {
-    func placeholder<Content: View>(
-        when shouldShow: Bool,
-        alignment: Alignment = .leading,
-        @ViewBuilder placeholder: () -> Content) -> some View {
-
-        ZStack(alignment: alignment) {
-            placeholder().opacity(shouldShow ? 1 : 0)
-            self
-        }
-    }
-}
-
-struct SwipeSearchTestView_Previews: PreviewProvider {
-    static var previews: some View {
-        SwipDownTest()
-    }
+#Preview {
+    SwipDownTest()
 }
