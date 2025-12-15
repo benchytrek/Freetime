@@ -15,11 +15,11 @@ struct ContentView: View {
                 }
             
             // Tab 2: Test / SwipeDownTest (Für deine Entwicklung)
-            SwipDownTest()
+            CalendarView()
                 .tabItem {
                     // 'hammer.fill' oder 'gear' signalisiert klar:
                     // Hier wird gebaut/getestet.
-                    Label("Test", systemImage: "hammer.fill")
+                    Label("Test", systemImage: "calendar.fill")
                 }
             HapticTest()
                 .tabItem {
