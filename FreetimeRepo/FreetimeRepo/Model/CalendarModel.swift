@@ -2,32 +2,40 @@
 //  CalendarModel.swift
 //  FreetimeRepo
 //
-//  Created by Ben Chytrek on 15.12.25.
+//  Created by Ben Chytrek on 16.12.25.
 //
 
 import Foundation
 
-struct CalendarDay: Identifiable {
-    
+// MARK: - Calendar Day Model
+// Repräsentiert einen einzelnen Tag in der horizontalen Scroll-Ansicht
+struct CalendarDay: Identifiable, Equatable {
     let id: UUID
-    // Format: "YYYY-MM-DD" (z.B. "2025-01-01")
-    let dateid: String
     
-    let date: Date
-    let dayNumber: String       // "01"
-    let weekday: String         // "MO"
-    let isToday: Bool           // brauch ich das?
-
+    // UI-Formatierte Strings (Damit die View nicht rechnen muss)
+    let dayNumber: String       // z.B. "16"
+    let weekday: String         // z.B. "MO"
+    let fullDateId: String      // z.B. "2025-12-16" (gut für DB-Keys)
+    
+    // Logik-Properties
+    let date: Date              // Das echte Date-Objekt (Start of Day)
+    let isToday: Bool
+    
+    // Inhalte
     var timeSlots: [TimeSlot]
     
-
+    // Equatable Implementierung für Performance (SwiftUI rendered nur neu, wenn sich was ändert)
+    static func == (lhs: CalendarDay, rhs: CalendarDay) -> Bool {
+        return lhs.id == rhs.id && lhs.isToday == rhs.isToday && lhs.timeSlots == rhs.timeSlots
+    }
 }
 
-struct TimeSlot: Identifiable {
+// MARK: - Time Slot Model
+// Repräsentiert eine Stunde an einem Tag (z.B. 14:00 - 15:00 Uhr)
+struct TimeSlot: Identifiable, Equatable {
+    let id: UUID
+    let time: Date              // Die exakte Startzeit (z.B. 16.12.25 14:00:00)
     
-    let id = UUID()
-    let time: Date
-    
-    
+    // Später können wir hier noch Events reinpacken:
+    // var event: Invite?
 }
-
