@@ -28,7 +28,7 @@ struct InviteData {
         titel: "Schrank Eskalation",
         description: "Lass mal unten auflegen",
         // Z.B. Heute Abend (angenommen 20.12.25)
-        date: makeDate(year: 2025, month: 12, day: 20, hour: 20, minute: 00),
+        date: makeDate(year: 2025, month: 12, day: 16, hour: 20, minute: 00),
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.philip, status: .pending),
@@ -42,7 +42,7 @@ struct InviteData {
         titel: "Bouldern",
         description: "und Sauna, Wichtig",
         // Z.B. Morgen Vormittag (21.12.25)
-        date: makeDate(year: 2025, month: 12, day: 21, hour: 10, minute: 30),
+        date: makeDate(year: 2025, month: 12, day: 17, hour: 10, minute: 30),
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.lena, status: .yes),
@@ -57,7 +57,7 @@ struct InviteData {
         titel: "Urlaub",
         description: "",
         // Z.B. Übermorgen (22.12.25)
-        date: makeDate(year: 2025, month: 12, day: 22, hour: 09, minute: 00),
+        date: makeDate(year: 2025, month: 12, day: 18, hour: 09, minute: 00),
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.lena, status: .maybe),
@@ -70,7 +70,7 @@ struct InviteData {
         titel: "Freetime Dev",
         description: "diggi weiter programmieren",
         // Z.B. Heute Mittag (20.12.25)
-        date: makeDate(year: 2025, month: 12, day: 20, hour: 14, minute: 00),
+        date: makeDate(year: 2025, month: 12, day: 18, hour: 14, minute: 00),
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes)
         ]

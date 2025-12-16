@@ -1,5 +1,5 @@
 //
-//  DateHeaderView.swift
+//  CalendarDateRow.swift
 //  FreetimeRepo
 //
 //  Created by Ben Chytrek on 15.12.25.
@@ -8,49 +8,42 @@
 import SwiftUI
 
 struct CalendarDateRow: View {
+    // Wir bekommen die 3 Tage, die gerade sichtbar sind
+    let days: [CalendarDay]
     
     var body: some View {
-        
-        HStack(spacing: 70) {
-            VStack(alignment: .center, spacing: 10) {
-                Text("Mon")
-                Text("1")
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Din")
-                Text("2")
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Mit")
-                Text("3")
-            }
-
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemGroupedBackground))
-        
-        HStack(spacing: 10) {
-            ForEach(1...30, id: \.self) { day in
-                VStack(alignment: .center, spacing: 10) {
-                    Text("\(day)")
+        HStack(spacing: 0) {
+            // Platzhalter für TimeColumn (damit es bündig ist)
+            Color.clear
+                .frame(width: 50)
+            
+            // Die 3 Spalten Headers
+            HStack(spacing: 0) {
+                ForEach(days) { day in
+                    VStack(spacing: 4) {
+                        Text(day.weekday)
+                            .font(.caption2.bold())
+                            .foregroundStyle(.secondary)
+                        
+                        ZStack {
+                            if day.isToday {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 32, height: 32)
+                            }
+                            Text(day.dayNumber)
+                                .font(.headline)
+                                .foregroundStyle(day.isToday ? .white : .primary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity) // Nimmt 1/3 Platz ein
+                    .padding(.vertical, 10)
                 }
             }
-            
-            Text("1")
-            Text("2")
-            Text("3")
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemGroupedBackground))
+        .background(Color(.systemBackground))
+        .overlay(Divider(), alignment: .bottom)
     }
 }
 
-#Preview {
-
-        CalendarDateRow()
-
-    .padding()
-    .background(Color(.systemGroupedBackground))
-}
+//preview hinzufügen ..... gemini

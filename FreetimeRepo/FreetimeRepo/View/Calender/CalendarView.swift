@@ -8,60 +8,39 @@
 import SwiftUI
 
 struct CalendarView: View {
-    // MARK: - Properties
-    
-    @State private var days: [Date] = {
-        let calendar = Calendar.current
-        let today = Date()
-        return (0..<30).compactMap { offset in
-            calendar.date(byAdding: .day, value: offset, to: today)
-        }
-    }()
-    
-    // Für den Header (Monatsanzeige)
+    // ViewModel nutzen statt @State
+    @State private var viewModel = CalendarViewModel()
     @State private var visibleDate: Date = Date()
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 
-                
-                
                 // 1. HEADER (Monat & Jahr)
+                // Zeigt jetzt das Datum des ersten sichtbaren Tages an (Demo: Dez 2025)
                 HStack {
-                    Text(visibleDate.formatted(.dateTime.month(.wide).year()))
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
+                    if let firstDay = viewModel.days.first?.date {
+                        Text(firstDay.formatted(.dateTime.month(.wide).year()))
+                            .font(.title2.bold())
+                            .foregroundStyle(.primary)
+                    }
                     
                     Spacer()
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
                 
-                
-                
-                
-                HStack {
-                    //CalendarDateRow(date: Date(), isToday: true)
-
-                }.frame(height: 20)
-                
                 // 2. HORIZONTAL SNAP LISTE
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 12) {
-                        ForEach(days, id: \.self) { date in
+                        // Wir iterieren jetzt über die angereicherten Tage aus dem ViewModel
+                        ForEach(viewModel.days) { day in
                             
-                            // HIER ist jetzt deine neue View im Einsatz:
-                            CalendarDayView(
-                                date: date,
-                                isToday: Calendar.current.isDateInToday(date)
-                            )
-                            // --- SCROLL EFFEKTE & SNAP ---
-                            .containerRelativeFrame(.horizontal, count: 3, spacing: 12)
+                            CalendarDayView(day: day) // Wir übergeben das ganze Day-Objekt
+                                
+                            // --- SCROLL EFFEKTE ---
+                            .containerRelativeFrame(.horizontal, count: 1, spacing: 0) // Fullscreen Card Style? Oder count: 3 lassen
+                            .frame(width: 300) // Oder fixe Breite für Snapping
                             .scrollTransition(.interactive, axis: .horizontal) { content, phase in
                                 content
                                     .scaleEffect(phase.isIdentity ? 1.0 : 0.92)
@@ -72,7 +51,7 @@ struct CalendarView: View {
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.viewAligned)
-                .contentMargins(.horizontal, 20, for: .scrollContent)
+                .contentMargins(.horizontal, 40, for: .scrollContent) // Mehr Rand für Fokus
                 
                 Spacer()
             }

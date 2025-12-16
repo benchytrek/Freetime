@@ -12,10 +12,10 @@ import Foundation
 struct CalendarDay: Identifiable, Equatable {
     let id: UUID
     
-    // UI-Formatierte Strings (Damit die View nicht rechnen muss)
+    // UI-Formatierte Strings
     let dayNumber: String       // z.B. "16"
     let weekday: String         // z.B. "MO"
-    let fullDateId: String      // z.B. "2025-12-16" (gut für DB-Keys)
+    let fullDateId: String      // z.B. "2025-12-16"
     
     // Logik-Properties
     let date: Date              // Das echte Date-Objekt (Start of Day)
@@ -24,18 +24,22 @@ struct CalendarDay: Identifiable, Equatable {
     // Inhalte
     var timeSlots: [TimeSlot]
     
-    // Equatable Implementierung für Performance (SwiftUI rendered nur neu, wenn sich was ändert)
+    // NEU: Hier landen die gematchten Invites
+    // Das behebt den Fehler "Value of type 'CalendarDay' has no member 'events'"
+    var events: [Invite] = []
+    
+    // Equatable Implementierung
     static func == (lhs: CalendarDay, rhs: CalendarDay) -> Bool {
-        return lhs.id == rhs.id && lhs.isToday == rhs.isToday && lhs.timeSlots == rhs.timeSlots
+        // Wir vergleichen jetzt auch die Events, damit das UI sich aktualisiert
+        return lhs.id == rhs.id &&
+               lhs.isToday == rhs.isToday &&
+               lhs.timeSlots == rhs.timeSlots &&
+               lhs.events.count == rhs.events.count
     }
 }
 
 // MARK: - Time Slot Model
-// Repräsentiert eine Stunde an einem Tag (z.B. 14:00 - 15:00 Uhr)
 struct TimeSlot: Identifiable, Equatable {
     let id: UUID
-    let time: Date              // Die exakte Startzeit (z.B. 16.12.25 14:00:00)
-    
-    // Später können wir hier noch Events reinpacken:
-    // var event: Invite?
+    let time: Date
 }
