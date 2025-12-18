@@ -11,7 +11,7 @@ struct CalendarTimeColum: View {
     // Layout Konfiguration
     let startHour: Int = 8
     let endHour: Int = 22
-    let hourHeight: CGFloat = 60 // WICHTIG: Muss überall gleich sein!
+    let hourHeight: CGFloat = 30 // WICHTIG: Muss überall gleich sein!
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,7 +19,7 @@ struct CalendarTimeColum: View {
             ForEach(Array(stride(from: startHour, through: endHour, by: 2)), id: \.self) { hour in
                 
                 // Ein Zeit-Block
-                Text("\(hour):00")
+                Text("\(hour)")
                     .font(.caption)
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
@@ -30,7 +30,7 @@ struct CalendarTimeColum: View {
                     .offset(y: -6)
             }
         }
-        .frame(width: 50) // Feste Breite für die linke Spalte
+        .frame(width: 30) // Feste Breite für die linke Spalte
         .padding(.top, 10) // Kleines Padding zum Start
     }
 }

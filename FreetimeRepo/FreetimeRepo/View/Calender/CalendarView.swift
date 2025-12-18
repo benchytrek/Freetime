@@ -11,21 +11,27 @@ struct CalendarView: View {
     // Zugriff auf die Daten
     @State private var viewModel = CalendarViewModel()
     
-    // NEU: Wir merken uns, welcher Tag gerade in der Mitte (fokussiert) ist
+    // Wir merken uns, welcher Tag gerade in der Mitte (fokussiert) ist
     @State private var currentDayID: UUID?
     
+    // Header View (ausgelagert für Übersichtlichkeit)
+    var header: some View {
+        Text("Calendar")
+            .font(Font.largeTitle.bold())
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+            .frame(maxWidth: .infinity, alignment: .leading) // Links bündig
+            .padding(.horizontal)
+            .padding(.top, 10)
+    }
+    
     var body: some View {
-        //Zstack neu für Calendar time column. an der linken seite
-        ZStack {// warum ist das ein ZStack?
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Calendar")
-                    .font(Font.largeTitle.bold())
-                    .padding()
-                    .cornerRadius(8)
-                    .padding()
-                    .shadow(color: Color.black.opacity(0.3), radius: 16, x: 20, y: 10)
-                
-                //Calendar Date Row soll über den CalendarDayView mit den gleichen datum wie die CalendarDayView sein 
+        VStack(alignment: .leading, spacing: 10) {
+            
+            // --- HEADER ---
+            header
+            
+            // --- MAIN CONTENT ---
+            ZStack(alignment: .topLeading) {
                 
                 // 1. DER SCROLLVIEW READER
                 ScrollViewReader { scrollProxy in
@@ -33,59 +39,89 @@ struct CalendarView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 0) {
                             
+                            // Platzhalter für TimeColumn
+                            Color.clear.frame(width: 50)
+                            
                             ForEach(viewModel.days) { day in
-                                CalendarDayView(day: day)
-                                    .frame(width: 100)
-                                    .padding(6)
-                                    .id(day.id) // Adresse für den Reader & scrollPosition
+                                VStack(spacing: 12) {
+                                    
+                                    // --- NEUE DATE ROW ---
+                                    // Hier ist sie: Bewegt sich mit, steht aber oben drüber
+                                    CalendarDateRow(day: day)
+                                        .id(day.id) // ID für ScrollTo
+                                    
+                                    // --- DAY VIEW (Timeline) ---
+                                    CalendarDayView(day: day)
+                                        .frame(width: 100)
+                                        // Animationen NUR für die Timeline (wenn gewünscht)
+                                        // oder für beide, damit Layout konsistent bleibt.
+                                        // Hier wenden wir den Effekt auf den Streifen an.
+                                }
+                                .padding(.horizontal, 6)
                                 
-                                // Deine Layout-Animationen
-                                    .scrollTransition(.interactive, axis: .horizontal) { view, position in
-                                        view
-                                            .opacity(position.value < -0.3 ? 0.3 : 1.0)
-                                            .scaleEffect(position.value < -0.3 ? 0.8 : 1.0)
-                                            .scaleEffect(position.value > 0.3 ? 0.5 : (position.value < -0.3 ? 0.8 : 1.0))
-                                            .offset(x: position.value > 0.3 ? -30 : 0)
+                                // --- ANIMATIONEN (Auf den ganzen Spalten-Container) ---
+                                .scrollTransition(.interactive, axis: .horizontal) { view, position in
+                                    view
+                                        .opacity(position.value < -0.3 ? 0.3 : 1.0)
+                                        .scaleEffect(position.value < -0.3 ? 0.8 : 1.0)
+                                        .scaleEffect(position.value > 0.3 ? 0.5 : (position.value < -0.3 ? 0.8 : 1.0))
+                                        .offset(x: position.value > 0.3 ? -30 : 0)
+                                }
+                                // --- ON TAP ---
+                                .onTapGesture {
+                                    guard day.id != currentDayID else { return }
+                                    
+                                    withAnimation(.snappy) {
+                                        scrollProxy.scrollTo(day.id, anchor: .center)
+                                        currentDayID = day.id
                                     }
-                                // 3. ON TAP LOGIK (Verbessert)
-                                    .onTapGesture {
-                                        // LOGIK: Wenn dieser Tag bereits in der Mitte ist, ignorieren wir den Klick.
-                                        // Das verhindert, dass man auf den mittleren Tag tippt und "nichts" passiert oder es zuckt.
-                                        guard day.id != currentDayID else { return }
-                                        
-                                        withAnimation(.snappy) {
-                                            // Scrollt den angetippten Tag (links oder rechts) in die Mitte
-                                            scrollProxy.scrollTo(day.id, anchor: .center)
-                                            // Update state (passiert durch scrollPosition meist automatisch, aber hier erzwingen wir den Fokus visuell)
-                                            currentDayID = day.id
-                                        }
-                                        print("Navigated to day: \(day.dayNumber)")
-                                    }
+                                }
                             }
                         }
                         .scrollTargetLayout()
                     }
                     .scrollTargetBehavior(.viewAligned)
-                    // NEU: Bindet die Scroll-Position an unsere Variable
                     .scrollPosition(id: $currentDayID)
                     .contentMargins(.horizontal, 40, for: .scrollContent)
-                    .frame(height: 500)
+                    .frame(height: 600)
                 }
-            }
-            .onAppear {
-                if viewModel.days.isEmpty { viewModel.loadData() }
-            }
-            // NEU: Initialisieren, damit wir nicht bei nil starten
-            .onChange(of: viewModel.days) { _, newDays in
-                if currentDayID == nil, let firstToday = newDays.first(where: { $0.isToday }) {
-                    currentDayID = firstToday.id
-                } else if currentDayID == nil {
-                    currentDayID = newDays.first?.id
+                
+                // 2. TIME COLUMN (Fixiertes Overlay links)
+                VStack {
+                    // Spacer, damit die Zeitspalte erst unter dem Datum beginnt
+                    // ca. Headerhöhe (DateRow ist ca 50-60 hoch)
+                    Color.clear.frame(height: 60)
+                    
+                    CalendarTimeColum()
+                        .background(
+                            LinearGradient(
+                                colors: [Color(.systemBackground), Color(.systemBackground).opacity(0)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                 }
+                .frame(width: 50)
+                .allowsHitTesting(false)
+            }
+        }
+        .onAppear {
+            if viewModel.days.isEmpty { viewModel.loadData() }
+        }
+        .onChange(of: viewModel.days) { _, newDays in
+            if currentDayID == nil, let firstToday = newDays.first(where: { $0.isToday }) {
+                currentDayID = firstToday.id
+            } else if currentDayID == nil {
+                currentDayID = newDays.first?.id
             }
         }
     }
 }
+
+// MARK: - Subcomponents
+
+// Deine ausgelagerte Date Row (für EINEN Tag)
+
 
 #Preview {
     CalendarView()
