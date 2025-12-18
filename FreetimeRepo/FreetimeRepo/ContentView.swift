@@ -11,19 +11,17 @@ struct ContentView: View {
                 .tabItem {
                     // SF Symbols sind Vektorgrafiken von Apple.
                     // 'envelope' ist der Standard für Einladungen/Nachrichten.
-                    Label("Invites", systemImage: "envelope.fill")
+                    Label("Invites", systemImage: "person.spatialaudio.3d.fill")
                 }
             
             // Tab 2: Test / SwipeDownTest (Für deine Entwicklung)
             CalendarView()
                 .tabItem {
-                    // 'hammer.fill' oder 'gear' signalisiert klar:
-                    // Hier wird gebaut/getestet.
-                    Label("Test", systemImage: "calendar.fill")
+                    Label("Calendar", systemImage: "calendar.badge.clock")
                 }
             HapticTest()
                 .tabItem {
-                    Label("Haptic", systemImage: "hand.draw.fill")
+                    Label("Haptic", systemImage: "testtube.2")
                 }
         }
         // Ein kleiner 'tint' sorgt für das moderne iOS-Feeling passend zu deiner CI

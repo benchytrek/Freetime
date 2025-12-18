@@ -8,54 +8,36 @@
 import SwiftUI
 
 struct CalendarView: View {
-    // ViewModel nutzen statt @State
-    @State private var viewModel = CalendarViewModel()
-    @State private var visibleDate: Date = Date()
-    
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                
-                // 1. HEADER (Monat & Jahr)
-                // Zeigt jetzt das Datum des ersten sichtbaren Tages an (Demo: Dez 2025)
-                HStack {
-                    if let firstDay = viewModel.days.first?.date {
-                        Text(firstDay.formatted(.dateTime.month(.wide).year()))
-                            .font(.title2.bold())
-                            .foregroundStyle(.primary)
-                    }
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Hello, World!")
+
+            HStack {
+                CalendarDayView()
+                    //.background(Color.blendMode(.))
+                    //.Transparency(0.1) soll transparent auf 10%
+                    .offset(x: 30)
+                    .transformEffect(CGAffineTransform(scaleX: 0.5, y: 1))
+                    //.scaleEffect(1.5)
+                    .offset(x: 40)
                     
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+                    .onTapGesture {TapGesture().onEnded { _ in print("liste nach links") }}
+                    Text("testlooooooolo")
+
+                CalendarDayView()
+                CalendarDayView()
+                CalendarDayView()
+                CalendarDayView()
+                    //.transparent soll werden 0.8
+                    // .frame(maxWidth: 20, maxhHeight: 10)
+                    .background(Color.red)
+                    .offset(x: 30)
+                    .transformEffect(CGAffineTransform(scaleX: 0.5, y: 0.5))
+                    .offset(x: -10, y: 100)
                 
-                // 2. HORIZONTAL SNAP LISTE
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 12) {
-                        // Wir iterieren jetzt über die angereicherten Tage aus dem ViewModel
-                        ForEach(viewModel.days) { day in
-                            
-                            CalendarDayView(day: day) // Wir übergeben das ganze Day-Objekt
-                                
-                            // --- SCROLL EFFEKTE ---
-                            .containerRelativeFrame(.horizontal, count: 1, spacing: 0) // Fullscreen Card Style? Oder count: 3 lassen
-                            .frame(width: 300) // Oder fixe Breite für Snapping
-                            .scrollTransition(.interactive, axis: .horizontal) { content, phase in
-                                content
-                                    .scaleEffect(phase.isIdentity ? 1.0 : 0.92)
-                                    .opacity(phase.isIdentity ? 1.0 : 0.6)
-                            }
-                        }
-                    }
-                    .scrollTargetLayout()
-                }
-                .scrollTargetBehavior(.viewAligned)
-                .contentMargins(.horizontal, 40, for: .scrollContent) // Mehr Rand für Fokus
-                
-                Spacer()
+                    .onTapGesture {TapGesture().onEnded { _ in print("liste nach rechts") }}
             }
-            .background(Color(.systemBackground))
+            //.offset(x: 50)
         }
     }
 }

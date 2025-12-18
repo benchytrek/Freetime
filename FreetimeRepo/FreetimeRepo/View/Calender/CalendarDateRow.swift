@@ -47,3 +47,4 @@ struct CalendarDateRow: View {
 }
 
 //preview hinzufügen ..... gemini
+//#Preview {CalendarDateRow(days: Array(viewModel.days[1,2,3]))}
