@@ -16,12 +16,27 @@ struct CalendarView: View {
     
     // Header View (ausgelagert für Übersichtlichkeit)
     var header: some View {
-        Text("Calendar")
-            .font(Font.largeTitle.bold())
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-            .frame(maxWidth: .infinity, alignment: .leading) // Links bündig
-            .padding(.horizontal)
-            .padding(.top, 10)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(Date().formatted(.dateTime.month()))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                
+                Text("Kalender") // Oder dynamisch Monat
+                    .font(.largeTitle.bold())
+                    .shadow(color: Color.gray.opacity(0.5), radius: 6, x: 8, y: 8)
+            }
+            Spacer()
+            
+            // Profilbild Platzhalter (Apple Style oben rechts)
+            Circle()
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 36, height: 36)
+                .overlay(Image(systemName: "person.fill").foregroundStyle(.gray))
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
     }
     
     var body: some View {
@@ -30,6 +45,7 @@ struct CalendarView: View {
             // --- HEADER ---
             header
             
+            Spacer()
             // --- MAIN CONTENT ---
             ZStack(alignment: .topLeading) {
                 
@@ -45,17 +61,13 @@ struct CalendarView: View {
                             ForEach(viewModel.days) { day in
                                 VStack(spacing: 12) {
                                     
-                                    // --- NEUE DATE ROW ---
-                                    // Hier ist sie: Bewegt sich mit, steht aber oben drüber
+                                    // --- DATE ROW (Ausgelagert in eigene Datei) ---
                                     CalendarDateRow(day: day)
                                         .id(day.id) // ID für ScrollTo
                                     
                                     // --- DAY VIEW (Timeline) ---
                                     CalendarDayView(day: day)
                                         .frame(width: 100)
-                                        // Animationen NUR für die Timeline (wenn gewünscht)
-                                        // oder für beide, damit Layout konsistent bleibt.
-                                        // Hier wenden wir den Effekt auf den Streifen an.
                                 }
                                 .padding(.horizontal, 6)
                                 
@@ -89,21 +101,22 @@ struct CalendarView: View {
                 // 2. TIME COLUMN (Fixiertes Overlay links)
                 VStack {
                     // Spacer, damit die Zeitspalte erst unter dem Datum beginnt
-                    // ca. Headerhöhe (DateRow ist ca 50-60 hoch)
-                    Color.clear.frame(height: 60)
+                    // ca. Headerhöhe (DateRow ist ca 60 hoch)
+                    Color.clear.frame(height: 70)
                     
                     CalendarTimeColum()
-                        .background(
-                            LinearGradient(
-                                colors: [Color(.systemBackground), Color(.systemBackground).opacity(0)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        
                 }
                 .frame(width: 50)
                 .allowsHitTesting(false)
             }
+            // tods list unten
+            Rectangle()
+                .fill(Color(.orange))
+                .opacity(0.5)
+                .blur(radius: 10)
+                .frame(width: 400, height: 10)
+                .padding(10)
         }
         .onAppear {
             if viewModel.days.isEmpty { viewModel.loadData() }
@@ -117,11 +130,6 @@ struct CalendarView: View {
         }
     }
 }
-
-// MARK: - Subcomponents
-
-// Deine ausgelagerte Date Row (für EINEN Tag)
-
 
 #Preview {
     CalendarView()
