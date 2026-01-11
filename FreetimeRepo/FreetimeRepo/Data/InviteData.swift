@@ -23,12 +23,36 @@ struct InviteData {
     // MARK: - Einzelne Invites definieren
     // Wir definieren sie hier einzeln, damit wir sie später leicht wiederfinden
     
+    static let arbeiten1 = Invite(
+        id: UUID(),
+        titel: "ATIW",
+        description: "schule",
+        date: makeDate(year: 2026, month: 1, day: 5, hour: 15, minute: 00),
+        duration: 8,
+        attendees: [
+            InviteAttendee(user: UserData.ben, status: .yes),
+        ]
+    )
+    
+    static let arbeiten2 = Invite(
+        id: UUID(),
+        titel: "ATIW",
+        description: "schule",
+        date: makeDate(year: 2026, month: 1, day: 14, hour: 8, minute: 00),
+        duration: 8,
+        attendees: [
+            InviteAttendee(user: UserData.ben, status: .yes),
+        ]
+    )
+    
+    
     static let schrankEskalation = Invite(
         id: UUID(),
         titel: "Schrank Eskalation",
         description: "Lass mal unten auflegen",
         // Z.B. Heute Abend (angenommen 20.12.25)
-        date: makeDate(year: 2025, month: 12, day: 16, hour: 20, minute: 00),
+        date: makeDate(year: 2026, month: 1, day: 14, hour: 20, minute: 00),
+        duration: 2,
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.philip, status: .pending),
@@ -42,7 +66,8 @@ struct InviteData {
         titel: "Bouldern",
         description: "und Sauna, Wichtig",
         // Z.B. Morgen Vormittag (21.12.25)
-        date: makeDate(year: 2025, month: 12, day: 17, hour: 10, minute: 30),
+        date: makeDate(year: 2026, month: 1, day: 12, hour: 18, minute: 30),
+        duration: 3,
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.lena, status: .yes),
@@ -57,7 +82,8 @@ struct InviteData {
         titel: "Urlaub",
         description: "",
         // Z.B. Übermorgen (22.12.25)
-        date: makeDate(year: 2025, month: 12, day: 18, hour: 09, minute: 00),
+        date: makeDate(year: 2026, month: 1, day: 10, hour: 09, minute: 00),
+        duration: 4,
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes),
             InviteAttendee(user: UserData.lena, status: .maybe),
@@ -70,7 +96,8 @@ struct InviteData {
         titel: "Freetime Dev",
         description: "diggi weiter programmieren",
         // Z.B. Heute Mittag (20.12.25)
-        date: makeDate(year: 2025, month: 12, day: 18, hour: 14, minute: 00),
+        date: makeDate(year: 2026, month: 1, day: 11, hour: 14, minute: 00),
+        duration: 1,
         attendees: [
             InviteAttendee(user: UserData.ben, status: .yes)
         ]

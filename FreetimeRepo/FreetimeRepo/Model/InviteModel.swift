@@ -13,6 +13,7 @@ struct Invite: Identifiable, Codable {
     var titel: String        
     var description: String
     var date: Date
+    var duration: Int 
     
     var attendees: [InviteAttendee]
 }
