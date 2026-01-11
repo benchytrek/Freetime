@@ -23,6 +23,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Goals", systemImage: "target")
                 }
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person.circle")
+                }
         }
         // Ein kleiner 'tint' sorgt für das moderne iOS-Feeling passend zu deiner CI
         // Definiert in deinen Assets als 'AccentColor'[cite: 42].
