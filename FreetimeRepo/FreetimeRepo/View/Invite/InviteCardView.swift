@@ -108,7 +108,7 @@ struct InviteCardView: View {
                         // Meeting Balken (Grün)
                         Capsule()
                             .fill(Color.green)
-                            .frame(width: width, height: 8) // Dynamische Breite
+                            .frame(width: CGFloat(invite.duration * 20), height: 6) // Dynamische Breite
                             .offset(x: xPosition)           // Dynamische Position
                     }
                 }
@@ -156,6 +156,7 @@ struct UserAvatar: View {
             titel: "Titel",
             description: "Description",
             date: Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!,
+            duration: 2,
             attendees: [InviteAttendee(user: ben, status: .yes)
                        // InviteAttendee(user: anna, status: .no)
                        ]
@@ -166,7 +167,8 @@ struct UserAvatar: View {
             id: UUID(),
             titel: "Mittagessen",
             description: "Pizza",
-            date: Calendar.current.date(bySettingHour: 15, minute: 0, second: 0, of: Date())!, // 15 Uhr = 3 PM
+            date: Calendar.current.date(bySettingHour: 15, minute: 0, second: 0, of: Date())!,
+            duration: 7, // 15 Uhr = 3 PM
             attendees: [InviteAttendee(user: ben, status: .yes)]
         ))
     }
