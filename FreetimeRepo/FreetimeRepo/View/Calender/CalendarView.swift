@@ -11,25 +11,27 @@ struct CalendarView: View {
     // Zugriff auf die Daten
     @State private var viewModel = CalendarViewModel()
     
-    // Wir merken uns, welcher Tag gerade in der Mitte (fokussiert) ist
+    // Wir merken uns, welcher Tag gerade links fokussiert ist
     @State private var currentDayID: UUID?
-    
-    // Header View (ausgelagert für Übersichtlichkeit)
+               
+    // Header View
     var header: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(Date().formatted(.dateTime.month()))
+                // Dynamisches Datum basierend auf dem sichtbaren Tag
+                Text(activeDateString)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
+                    .contentTransition(.numericText())
                 
-                Text("Kalender") // Oder dynamisch Monat
+                Text("Kalender")
                     .font(.largeTitle.bold())
                     .shadow(color: Color.gray.opacity(0.5), radius: 6, x: 8, y: 8)
             }
             Spacer()
             
-            // Profilbild Platzhalter (Apple Style oben rechts)
+            // Profilbild Platzhalter
             Circle()
                 .fill(Color.gray.opacity(0.2))
                 .frame(width: 36, height: 36)
@@ -49,29 +51,28 @@ struct CalendarView: View {
             // --- MAIN CONTENT ---
             ZStack(alignment: .topLeading) {
                 
-                // 1. DER SCROLLVIEW READER
+                // 1. SCROLLVIEW
                 ScrollViewReader { scrollProxy in
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 0) {
                             
-                            // Platzhalter für TimeColumn
-                            Color.clear.frame(width: 50)
+                            // HINWEIS: Spacer entfernt. Wir nutzen contentMargins für sauberes Snapping.
                             
                             ForEach(viewModel.days) { day in
                                 VStack(spacing: 12) {
                                     
-                                    // --- DATE ROW (Ausgelagert in eigene Datei) ---
+                                    // --- DATE ROW ---
                                     CalendarDateRow(day: day)
-                                        .id(day.id) // ID für ScrollTo
+                                        .id(day.id) // Wichtig für ScrollPosition
                                     
-                                    // --- DAY VIEW (Timeline) ---
+                                    // --- DAY VIEW ---
                                     CalendarDayView(day: day)
                                         .frame(width: 100)
                                 }
                                 .padding(.horizontal, 6)
                                 
-                                // --- ANIMATIONEN (Auf den ganzen Spalten-Container) ---
+                                // --- ANIMATIONEN ---
                                 .scrollTransition(.interactive, axis: .horizontal) { view, position in
                                     view
                                         .opacity(position.value < -0.3 ? 0.3 : 1.0)
@@ -82,9 +83,7 @@ struct CalendarView: View {
                                 // --- ON TAP ---
                                 .onTapGesture {
                                     guard day.id != currentDayID else { return }
-                                    
                                     withAnimation(.snappy) {
-                                        scrollProxy.scrollTo(day.id, anchor: .center)
                                         currentDayID = day.id
                                     }
                                 }
@@ -93,24 +92,24 @@ struct CalendarView: View {
                         .scrollTargetLayout()
                     }
                     .scrollTargetBehavior(.viewAligned)
-                    .scrollPosition(id: $currentDayID)
-                    .contentMargins(.horizontal, 40, for: .scrollContent)
+                    // LOGIK: anchor: .leading sorgt dafür, dass der Tag LINKS einrastet
+                    .scrollPosition(id: $currentDayID, anchor: .leading)
+                    // LOGIK: 50pt Margin links reservieren Platz für die TimeColumn
+                    .contentMargins(.leading, 50, for: .scrollContent)
+                    .contentMargins(.trailing, 40, for: .scrollContent)
                     .frame(height: 600)
                 }
                 
                 // 2. TIME COLUMN (Fixiertes Overlay links)
                 VStack {
-                    // Spacer, damit die Zeitspalte erst unter dem Datum beginnt
-                    // ca. Headerhöhe (DateRow ist ca 60 hoch)
-                    Color.clear.frame(height: 70)
-                    
+                    Color.clear.frame(height: 70) // Platzhalter für Header-Abstand
                     CalendarTimeColum()
-                        
                 }
                 .frame(width: 50)
                 .allowsHitTesting(false)
             }
-            // tods list unten
+            
+            // Deko Element unten
             Rectangle()
                 .fill(Color(.orange))
                 .opacity(0.5)
@@ -120,14 +119,20 @@ struct CalendarView: View {
         }
         .onAppear {
             if viewModel.days.isEmpty { viewModel.loadData() }
-        }
-        .onChange(of: viewModel.days) { _, newDays in
-            if currentDayID == nil, let firstToday = newDays.first(where: { $0.isToday }) {
-                currentDayID = firstToday.id
-            } else if currentDayID == nil {
-                currentDayID = newDays.first?.id
+            
+            // WICHTIG: Beim Start direkt zu "Heute" springen
+            if currentDayID == nil {
+                currentDayID = viewModel.todayId
             }
         }
+    }
+    
+    // Helper für dynamischen Header-Text
+    private var activeDateString: String {
+        if let id = currentDayID, let day = viewModel.days.first(where: { $0.id == id }) {
+            return day.date.formatted(.dateTime.month(.wide).year())
+        }
+        return Date().formatted(.dateTime.month(.wide).year())
     }
 }
 

@@ -44,7 +44,7 @@ struct SwipeDownTest: View {
                                 Spacer()
                             }
                             .padding(.horizontal)
-                            .padding(.top, 20)
+                            .padding(.bottom, 150)
                             
                             
                             // Liste der Items

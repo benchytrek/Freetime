@@ -20,6 +20,17 @@ struct UserData {
     static let sophie = User(id: UUID(), name: "Sophie")
     static let mama = User(id: UUID(), name: "Mama")
     
+    static let partyPeople: [User] = [
+        User(id: UUID(), name: "Ali"), User(id: UUID(), name: "Bea"), User(id: UUID(), name: "Chris"),
+        User(id: UUID(), name: "Dora"), User(id: UUID(), name: "Erik"), User(id: UUID(), name: "Fay"),
+        User(id: UUID(), name: "Gino"), User(id: UUID(), name: "Hana"), User(id: UUID(), name: "Ivo"),
+        User(id: UUID(), name: "Jana"), User(id: UUID(), name: "Kai"), User(id: UUID(), name: "Lea"),
+        User(id: UUID(), name: "Mio"), User(id: UUID(), name: "Nia"), User(id: UUID(), name: "Ole"),
+        User(id: UUID(), name: "Pia"), User(id: UUID(), name: "Quinn"), User(id: UUID(), name: "Ria"),
+        User(id: UUID(), name: "Sam"), User(id: UUID(), name: "Tea"), User(id: UUID(), name: "Udo"),
+        User(id: UUID(), name: "Vicky")
+    ]
+    
     // Die Liste für deine horizontale ScrollView
     static let allUsers: [User] = [
         ben, philip, tim, ruben, anne, tom, lena, ramonski, sophie, mama

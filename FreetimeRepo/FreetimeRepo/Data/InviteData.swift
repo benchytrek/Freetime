@@ -102,13 +102,152 @@ struct InviteData {
             InviteAttendee(user: UserData.ben, status: .yes)
         ]
     )
+    // MARK: - Triathlon & Training Invites
+        
+        static let morningSwim = Invite(
+            id: UUID(),
+            titel: "Frühschwimmen",
+            description: "Technik & Ausdauer, Bahn 1 reserviert",
+            date: makeDate(year: 2026, month: 1, day: 15, hour: 06, minute: 30),
+            duration: 1,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.tim, status: .maybe),
+                InviteAttendee(user: UserData.anne, status: .yes)
+            ]
+        )
+        
+        static let longRide = Invite(
+            id: UUID(),
+            titel: "Lange Ausfahrt",
+            description: "GA1 Runde, ca. 80km, Kaffeepause eingeplant",
+            date: makeDate(year: 2026, month: 1, day: 17, hour: 10, minute: 00),
+            duration: 3,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.philip, status: .yes),
+                InviteAttendee(user: UserData.ramonski, status: .no)
+            ]
+        )
+        
+        static let trackIntervals = Invite(
+            id: UUID(),
+            titel: "Track Night",
+            description: "400m Intervalle ballern, danach Dehnen",
+            date: makeDate(year: 2026, month: 1, day: 20, hour: 18, minute: 00),
+            duration: 2,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.tom, status: .yes)
+            ]
+        )
+        
+        static let brickSession = Invite(
+            id: UUID(),
+            titel: "Koppeltraining",
+            description: "40km Rad + 5km Lauf (Wettkampf-Pace)",
+            date: makeDate(year: 2026, month: 1, day: 24, hour: 09, minute: 00),
+            duration: 2,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.lena, status: .maybe)
+            ]
+        )
+        
+        static let zwiftRace = Invite(
+            id: UUID(),
+            titel: "Zwift Race",
+            description: "Watopia Flat Route, Discord ist an",
+            date: makeDate(year: 2026, month: 1, day: 21, hour: 19, minute: 00),
+            duration: 1,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.ruben, status: .pending)
+            ]
+        )
+        
+        static let gymStrength = Invite(
+            id: UUID(),
+            titel: "Athletik & Stabi",
+            description: "Rumpfstabi ist wichtig für die Aero-Position!",
+            date: makeDate(year: 2026, month: 1, day: 16, hour: 17, minute: 30),
+            duration: 1,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.sophie, status: .yes)
+            ]
+        )
+        
+        static let recoveryYoga = Invite(
+            id: UUID(),
+            titel: "Recovery Yoga",
+            description: "Mobility Flow für Hüfte und Rücken",
+            date: makeDate(year: 2026, month: 1, day: 18, hour: 10, minute: 00),
+            duration: 1,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .maybe),
+                InviteAttendee(user: UserData.lena, status: .yes),
+                InviteAttendee(user: UserData.mama, status: .yes)
+            ]
+        )
+        
+        static let longRun = Invite(
+            id: UUID(),
+            titel: "Long Run",
+            description: "20km locker, Podcast an und los",
+            date: makeDate(year: 2026, month: 1, day: 25, hour: 08, minute: 00),
+            duration: 2,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes)
+            ]
+        )
+        
+        static let bikeFitting = Invite(
+            id: UUID(),
+            titel: "Bike Fitting",
+            description: "Sattelhöhe und Cleats einstellen bei Canyon",
+            date: makeDate(year: 2026, month: 1, day: 28, hour: 14, minute: 00),
+            duration: 2,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.philip, status: .maybe)
+            ]
+        )
+        
+        static let triathlonMeetup = Invite(
+            id: UUID(),
+            titel: "Tri-Team Pizza",
+            description: "Saisonplanung und Carb-Loading",
+            date: makeDate(year: 2026, month: 1, day: 30, hour: 19, minute: 30),
+            duration: 3,
+            attendees: [
+                InviteAttendee(user: UserData.ben, status: .yes),
+                InviteAttendee(user: UserData.tim, status: .yes),
+                InviteAttendee(user: UserData.anne, status: .yes),
+                InviteAttendee(user: UserData.ruben, status: .no)
+            ]
+        )
 
-    // MARK: - Die Liste für die App
-    // Hier fügen wir einfach die oben definierten Teile zusammen
-    static let allInvites: [Invite] = [
-        schrankEskalation,
-        bouldern,
-        urlaub,
-        freetimeDev
-    ]
-}
+        // MARK: - Die Liste für die App
+        static let allInvites: [Invite] = [
+            // Bestehende
+            arbeiten1,
+            arbeiten2,
+            schrankEskalation,
+            bouldern,
+            urlaub,
+            freetimeDev,
+            
+            
+            morningSwim,
+            longRide,
+            trackIntervals,
+            brickSession,
+            zwiftRace,
+            gymStrength,
+            recoveryYoga,
+            longRun,
+            bikeFitting,
+            triathlonMeetup
+        ]
+    }

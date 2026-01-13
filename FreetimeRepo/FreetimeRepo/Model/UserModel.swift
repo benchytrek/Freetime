@@ -7,6 +7,7 @@
 
 import Foundation
 
+//Public Person
 
 struct User: Identifiable, Codable {
     let id: UUID

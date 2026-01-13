@@ -14,39 +14,44 @@ class CalendarViewModel {
     
     var days: [CalendarDay] = []
     
+    // NEU: Wir merken uns die ID von "Heute", um direkt dort hinzuspringen
+    var todayId: UUID?
+    
     init() {
         loadData()
     }
     
     func loadData() {
-        // 1. Kalender generieren (Startet automatisch bei HEUTE)
-        // Wir generieren z.B. 30 Tage ab heute.
-        // Wenn heute der 16.12. ist, generieren wir [16.12, 17.12, ..., 15.01]
-        var tempDays = CalendarData.generateMockDays(daysCount: 30)
+        // 1. STATISCHE DATEN LADEN
+        var tempDays = CalendarData.year2026
         
-        // 2. INVITES LADEN
-        // Das sind deine festen Events aus InviteData (z.B. 20.12.2025)
+        // 2. EVENTS LADEN
         let allInvites = InviteData.allInvites
         
-        // 3. CONNECTEN (Mapping)
-        // Wir gehen jeden generierten Tag durch
+        // 3. MAPPING
         for i in 0..<tempDays.count {
             let dayDate = tempDays[i].date
             
-            // Wir suchen Invites, die genau an diesem Tag stattfinden
-            // Apple Calendar hilft uns beim Vergleich (ignoriert Uhrzeit)
             let eventsForThisDay = allInvites.filter { invite in
                 Calendar.current.isDate(invite.date, inSameDayAs: dayDate)
             }
             
-            // Wenn Events gefunden wurden, weisen wir sie dem Tag zu
             if !eventsForThisDay.isEmpty {
                 tempDays[i].events = eventsForThisDay.sorted(by: { $0.date < $1.date })
-                print("✅ Event gefunden für \(dayDate.formatted()): \(eventsForThisDay.map(\.titel))")
             }
         }
         
-        // 4. Update UI
+        // 4. "HEUTE" FINDEN
+        // Wir suchen den Tag, der tatsächlich "Heute" ist.
+        // Falls wir heute (2025) sind, der Kalender aber 2026 ist, wird 'today' nil sein.
+        // In dem Fall nehmen wir einfach den allerersten Tag (1.1.2026).
+        if let today = tempDays.first(where: { $0.isToday }) {
+            self.todayId = today.id
+        } else {
+            self.todayId = tempDays.first?.id
+        }
+        
+        // 5. Update UI
         self.days = tempDays
     }
 }
