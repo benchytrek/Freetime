@@ -9,7 +9,7 @@ import Foundation
 
 //Public Person
 
-struct User: Identifiable, Codable {
+struct User: Identifiable, Codable, Equatable {
     let id: UUID
     let name: String
     
