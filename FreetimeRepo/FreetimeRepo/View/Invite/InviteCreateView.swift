@@ -10,15 +10,9 @@ import SwiftUI
 struct InviteCreateView: View {
     @Environment(\.dismiss) var dismiss
     
-    // UI State
+    // Nur noch minimaler State für UI
     @State private var title: String = ""
     @FocusState private var isTitleFocused: Bool
-    
-    // State für die Partikel
-    @State private var particles: [UserParticle] = []
-    
-    // Layout Mathe Konstanten
-    let spacing: CGFloat = 65
     
     var body: some View {
         NavigationStack {
@@ -28,15 +22,13 @@ struct InviteCreateView: View {
                 Color.black.ignoresSafeArea()
                     .onTapGesture { isTitleFocused = false }
                 
-                // 2. PARTIKEL CONTAINER (400x400 Box)
-                // Positioniert unter dem Header
-                FriendsBubble(particles: particles)
-                    .frame(width: 400, height: 400)
-                    // Verschiebt die ganze Box visuell etwas nach unten, damit die Mitte passt
-                    .offset(y: 150)
-                    .allowsHitTesting(false) // Klicks gehen durch (zum Dismissen der Tastatur)
+                // 2. DIE INTELLIGENTE BUBBLE VIEW
+                // Wir übergeben nur den Titel, sie kümmert sich um den Rest.
+                FriendsBubble(inputString: title)
+                    .offset(y: 120) // Positionierung unter dem Header
+                    .allowsHitTesting(false) // Klicks gehen durch zum Hintergrund
                 
-                // 3. VORDERGRUND (Input Field Balken)
+                // 3. VORDERGRUND (Input Field)
                 VStack(spacing: 0) {
                     
                     // TITEL EINGABE
@@ -78,48 +70,10 @@ struct InviteCreateView: View {
                         .foregroundStyle(.blue)
                 }
             }
-            // Tipp-Logik
-            .onChange(of: title) { oldValue, newValue in
-                handleTyping(old: oldValue, new: newValue)
-            }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isTitleFocused = true
                 }
-            }
-        }
-    }
-    
-    // MARK: - LOGIC (Phyllotaxis)
-    
-    func handleTyping(old: String, new: String) {
-        if new.count > old.count {
-            addParticle(index: new.count - 1)
-        } else if new.count < old.count {
-            removeParticle()
-        }
-    }
-    
-    func addParticle(index: Int) {
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-            let user = UserData.partyPeople[index % UserData.partyPeople.count]
-            
-            // Mathe für Grid-Position relativ zur Mitte (0,0)
-            let angle = Double(index) * 2.39996 // Goldener Winkel
-            let radius = spacing * CGFloat(sqrt(Double(index)))
-            
-            let x = radius * cos(angle)
-            let y = radius * sin(angle)
-            
-            let particle = UserParticle(user: user, targetX: x, targetY: y)
-            particles.append(particle)
-        }
-    }
-    
-    func removeParticle() {
-        withAnimation(.easeOut(duration: 0.2)) {
-            if !particles.isEmpty {
-                particles.removeLast()
             }
         }
     }
