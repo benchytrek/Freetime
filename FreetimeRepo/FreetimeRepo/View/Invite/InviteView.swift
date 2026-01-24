@@ -90,6 +90,11 @@ struct InviteView: View {
             }
             // ... in InviteView.swift ...
                         
+            // Suche das Ende des ZStack Blocks, kurz vor den .sheet Modifiers
+            // Füge folgenden Code ein:
+
+            
+            
             // Create-Sheet (durch Swipe ausgelöst)
             .sheet(isPresented: $showCreateSheet) {
                 // WICHTIG: Wir geben unser existierendes ViewModel weiter!

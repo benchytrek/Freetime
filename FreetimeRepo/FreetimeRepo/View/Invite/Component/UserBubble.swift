@@ -2,74 +2,62 @@
 //  UserBubble.swift
 //  FreetimeRepo
 //
-//  Created by Ben Chytrek on 13.01.26.
+//  Created by Ben Chytrek on 14.01.26.
 //
 
 import SwiftUI
 
 struct UserBubble: View {
-        let user: User
-        let size: CGFloat
-        
-        // State für das sanfte Wabern nach der Landung
-        @State private var isWobbling = false
-        
-        // Erzeugt eine stabile Farbe basierend auf dem Namen
-        var glowColor: Color {
-            let colors: [Color] = [.blue, .purple, .pink, .cyan, .mint, .orange, .indigo]
-            let index = abs(user.name.hashValue) % colors.count
-            return colors[index]
-        }
-        
-        var body: some View {
+    let user: User
+    let size: CGFloat
+    var isSelected: Bool = false
+    
+    @State private var isWobbling = false
+    
+    // Farbe logik: Grün bei Auswahl
+    var currentColor: Color {
+        if isSelected { return .green }
+        let colors: [Color] = [.blue, .purple, .pink, .cyan, .mint, .orange, .indigo]
+        return colors[abs(user.name.hashValue) % colors.count]
+    }
+    
+    var body: some View {
+        VStack(spacing: 4) {
             ZStack {
-                // 1. GLOW (Hintergrund)
+                // Glow
                 Circle()
-                    .fill(glowColor)
+                    .fill(currentColor)
                     .frame(width: size, height: size)
-                    .blur(radius: 10) // Starker Blur für den Glow
-                    .opacity(0.7)
+                    .blur(radius: isSelected ? 10 : 8)
+                    .opacity(isSelected ? 0.8 : 0.6)
                 
-                // 2. SOLID BODY (Vordergrund)
+                // Körper
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [glowColor.opacity(0.8), glowColor],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(colors: [currentColor.opacity(0.9), currentColor.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: size, height: size)
-                    .overlay(
-                        // Leichter weißer Rand (Inset) für 3D Look
-                        Circle().stroke(.white.opacity(0.3), lineWidth: 1.5)
-                    )
+                    .overlay(Circle().stroke(.white, lineWidth: isSelected ? 3 : 1).opacity(isSelected ? 1 : 0.4))
                 
-                // 3. INITIALE
-                Text(user.name.prefix(1))
-                    .font(.system(size: size * 0.4, weight: .heavy, design: .rounded))
+                // Icon
+                Image(systemName: isSelected ? "checkmark" : "person.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size * 0.45)
                     .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 1, x: 1, y: 1)
+                    .contentTransition(.symbolEffect(.replace))
             }
-            // Wabern (Breathing Effect)
-            .offset(
-                x: isWobbling ? CGFloat.random(in: -2...2) : 0,
-                y: isWobbling ? CGFloat.random(in: -2...2) : 0
-            )
-            .onAppear {
-                // Startet asynchron, damit nicht alle synchron wackeln
-                withAnimation(
-                    .easeInOut(duration: Double.random(in: 2.0...4.0))
-                    .repeatForever(autoreverses: true)
-                    .delay(Double.random(in: 0...0.5))
-                ) {
-                    isWobbling = true
-                }
-            }
+            .scaleEffect(isSelected ? 1.1 : 1.0)
+            
+            // Name
+            Text(user.name)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(.primary)
+                .shadow(color: .white.opacity(0.8), radius: 2)
+        }
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+        // Waber-Animation
+        .offset(x: isWobbling ? CGFloat.random(in: -1...1) : 0, y: isWobbling ? CGFloat.random(in: -1...1) : 0)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) { isWobbling = true }
         }
     }
-
-
-#Preview {
-    UserBubble(user: User.init(id: UUID(), name: "ben"), size: 100)
 }
