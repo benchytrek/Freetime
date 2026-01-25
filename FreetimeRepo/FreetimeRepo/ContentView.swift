@@ -22,7 +22,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
                 }
-        }//lol
+        }//test
         .tint(Color.accentColor)
     }
 }
