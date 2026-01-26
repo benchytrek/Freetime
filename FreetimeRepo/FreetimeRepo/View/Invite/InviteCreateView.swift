@@ -11,6 +11,7 @@ struct InviteCreateView: View {
     @State private var startTime: Double = 13.0 // Startzeit (z.B. 13:00)
     @State private var duration: Double = 1.0  // Dauer in Stunden (0.5 bis 10.0)
     
+    @State private var selectedDate: Date = Date()
     // Set für die Auswahl der User IDs
     @State private var selectedUserIds: Set<UUID> = []
     
@@ -93,7 +94,47 @@ struct InviteCreateView: View {
 
                         }
                         
-                        // 4. Interaktive Zeit-Vorschau
+                        // 4. Tagesauswahl (NEU)
+                        VStack(alignment: .leading, spacing: 12) {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(0..<14, id: \.self) { dayOffset in
+                                        let date = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) ?? Date()
+                                        let isSelected = Calendar.current.isDate(date, inSameDayAs: selectedDate)
+                                        
+                                        Button {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                selectedDate = date
+                                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            }
+                                        } label: {
+                                            VStack(spacing: 4) {
+                                                Text(date.formatted(.dateTime.weekday(.abbreviated)))
+                                                    .font(.caption2.bold())
+                                                    .textCase(.uppercase)
+                                                    .opacity(isSelected ? 1 : 0.7)
+                                                Text(date.formatted(.dateTime.day()))
+                                                    .font(.title3.bold())
+                                            }
+                                            .frame(width: 64, height: 80)
+                                            .background(isSelected ? Color.teal : Color.white.opacity(0.1))
+                                            .background(.ultraThinMaterial) // Liquid Glass Effekt
+                                            .cornerRadius(18)
+                                            .foregroundStyle(isSelected ? .white : .primary)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .stroke(isSelected ? Color.teal.opacity(0.5) : Color.white.opacity(0.2), lineWidth: 1)
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                            }
+                        }
+
+                        // 5. Interaktive Zeit-Vorschau (vorher 4)
+
                         VStack(alignment: .center, spacing: 16) {
                             HStack {
                                 
@@ -128,6 +169,37 @@ struct InviteCreateView: View {
                                 }
                             }
                             .frame(height: CGFloat(max(1, selectedUserIds.count)) * 72 + 20)
+                            
+                            // 6. Haupt-Aktionsbutton (Liquid Design)
+                            Button(action: {
+                                // Hier später die ViewModel-Aktion zum Speichern aufrufen
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                dismiss()
+                            }) {
+                                ZStack {
+                                    // Hintergrund mit sanftem Gradienten
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [Color.teal, Color.teal.opacity(0.8)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .shadow(color: Color.teal.opacity(0.3), radius: 12, x: 0, y: 8)
+                                    
+                                    Text("Invite senden")
+                                        .font(.system(.headline, design: .rounded))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                }
+                                .frame(height: 56)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
+                            .disabled(title.isEmpty) // Button ist nur aktiv, wenn ein Titel existiert
+                            .opacity(title.isEmpty ? 0.6 : 1.0)
+                            .animation(.easeInOut, value: title.isEmpty)
                         }
                         
                         Spacer(minLength: 50)
