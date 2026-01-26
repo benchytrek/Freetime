@@ -13,7 +13,7 @@ struct InviteCreateView: View {
     
     @State private var selectedDate: Date = Date()
     // Set für die Auswahl der User IDs
-    @State private var selectedUserIds: Set<UUID> = []
+    @State private var selectedUserIds: Set<String> = []
     
     // Zugriff auf die Mock-Daten
     private let allUsers = UserData.allUsers

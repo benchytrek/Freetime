@@ -9,17 +9,19 @@ import Foundation
 
 // 1. Das Model für die Einladung
 struct Invite: Identifiable, Codable {
-    let id: UUID
-    var titel: String        
+    let id: String
+    var titel: String
     var description: String
     var date: Date
-    var duration: Int 
+    var duration: Int
     
     var attendees: [InviteAttendee]
+    
+    //var participant_ids: [String] vielleicht grosse problem mit dem bruder 
 }
 
 struct InviteAttendee: Identifiable, Codable {
-    var id: UUID { user.id }
+    var id: String { user.id }
     
     let user: User
     var status: InvitationAnswer

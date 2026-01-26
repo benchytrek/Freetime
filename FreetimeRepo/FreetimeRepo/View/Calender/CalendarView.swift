@@ -12,7 +12,7 @@ struct CalendarView: View {
     @State private var viewModel = CalendarViewModel()
     
     // Wir merken uns, welcher Tag gerade links fokussiert ist
-    @State private var currentDayID: UUID?
+    @State private var currentDayID: String?
                
     // Header View
     var header: some View {

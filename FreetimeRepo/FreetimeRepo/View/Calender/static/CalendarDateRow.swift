@@ -42,7 +42,7 @@ struct CalendarDateRow: View {
     HStack(spacing: 20) {
         // Beispiel 1: Heute
         CalendarDateRow(day: CalendarDay(
-            id: UUID(),
+            id: "today",
             dayNumber: "18",
             weekday: "DO",
             fullDateId: "2025-12-18",
@@ -54,7 +54,7 @@ struct CalendarDateRow: View {
         
         // Beispiel 2: Anderer Tag
         CalendarDateRow(day: CalendarDay(
-            id: UUID(),
+            id: "tomorrow",
             dayNumber: "19",
             weekday: "FR",
             fullDateId: "2025-12-19",

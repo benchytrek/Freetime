@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Observation
+import FirebaseFirestore
 
 @MainActor
 @Observable
@@ -9,50 +10,54 @@ class InviteViewModel {
     var UserList: [User] = []
     var InviteList: [Invite] = []
     
+    // Referenz auf die Firestore-Datenbank
+    private let db = Firestore.firestore()
+    // Speicher für den Listener, damit wir ihn bei Bedarf stoppen können
+    private nonisolated(unsafe) var listener: ListenerRegistration?
+    
     init() {
         loadData()
     }
     
     func loadData() {
+        // 1. Statische User-Daten (vorerst weiterhin aus MockData)
         self.UserList = UserData.allUsers
-        // Wir sortieren direkt nach Datum, damit das neue Event richtig einsortiert wird
-        self.InviteList = InviteData.allInvites.sorted(by: { $0.date < $1.date })
+        
+        // 2. Firebase Listener auf die "events" Collection
+        // Wir filtern nach 'participant_ids', um nur Events zu sehen, bei denen du dabei bist.
+        // Hardcoded für den MVP: wir nutzen "user_ben" (später Auth UID)
+        let currentUserID = "user_ben"
+        
+        listener = db.collection("events")
+            .whereField("participant_ids", arrayContains: currentUserID)
+            .addSnapshotListener { [weak self] querySnapshot, error in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    print("❌ Fehler beim Laden der Invites: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let documents = querySnapshot?.documents else { return }
+                
+                // Nutzt das 'Codable' Protokoll von Firebase, um Docs in Invite-Objekte zu wandeln
+                self.InviteList = documents.compactMap { queryDocumentSnapshot -> Invite? in
+                    try? queryDocumentSnapshot.data(as: Invite.self)
+                }.sorted(by: { $0.date < $1.date })
+                
+                print("✅ \(self.InviteList.count) Invites live aus Firebase geladen.")
+            }
     }
     
     // MARK: - Actions
     
-    func createInvite(title: String, description: String, date: Date, durationHours: Int, selectedUserIds: Set<UUID>) {
-        
-        // 1. Die passenden User Objekte finden anhand der IDs
-        // Wir setzen den Status für den Ersteller auf .yes, für alle anderen auf .pending
-        var attendees: [InviteAttendee] = []
-        
-        // Der aktuelle User (Du) ist immer dabei
-        let me = UserData.ben // Hardcoded für MVP, später dynamisch
-        attendees.append(InviteAttendee(user: me, status: .yes))
-        
-        // Die ausgewählten Freunde hinzufügen
-        let friends = UserData.allUsers.filter { selectedUserIds.contains($0.id) }
-        for friend in friends {
-            attendees.append(InviteAttendee(user: friend, status: .pending))
-        }
-        
-        // 2. Neues Invite Objekt bauen
-        let newInvite = Invite(
-            id: UUID(),
-            titel: title,
-            description: description,
-            date: date,
-            duration: durationHours,
-            attendees: attendees
-        )
-        
-        // 3. Zur Liste hinzufügen und neu sortieren
-        // Wir fügen es hinzu und sortieren sofort neu, damit es an der richtigen Zeit-Stelle steht
-        var currentList = self.InviteList
-        currentList.append(newInvite)
-        self.InviteList = currentList.sorted(by: { $0.date < $1.date })
-        
-        print("✅ Invite '\(title)' erstellt mit \(attendees.count) Teilnehmern.")
+    func createInvite(title: String, description: String, date: Date, durationHours: Int, selectedUserIds: Set<String>) {
+        // Hier folgt als nächstes die Logik, um ein Dokument in Firebase zu SPEICHERN
+        // (setData anstatt nur lokal zum Array hinzufügen)
+    }
+    
+    deinit {
+        // Stoppt den Listener, wenn das ViewModel zerstört wird
+        listener?.remove()
     }
 }

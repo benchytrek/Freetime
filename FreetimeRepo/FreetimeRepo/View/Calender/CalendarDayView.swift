@@ -87,7 +87,7 @@ struct CalendarDayView: View {
     let todayAt10 = Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: Date())!
     
     let mockEvent = Invite(
-        id: UUID(),
+        id: "event-1",
         titel: "Test Meeting",
         description: "Positionierung testen",
         date: todayAt10,
@@ -96,7 +96,7 @@ struct CalendarDayView: View {
     )
     
     CalendarDayView(day: CalendarDay(
-        id: UUID(),
+        id: "event-2",
         dayNumber: "6",
         weekday: "DI",
         fullDateId: "2026-1-6",

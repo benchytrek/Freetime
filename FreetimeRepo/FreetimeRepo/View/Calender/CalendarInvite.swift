@@ -81,7 +81,7 @@ struct CalendarInvite: View {
 #Preview {
     // Nutzung der existierenden UserData für die Preview
     let mockInvite = Invite(
-        id: UUID(),
+        id: "event-1",
         titel: "Projektplanung Freetime App",
         description: "Besprechung der Roadmap und Features.",
         date: Date(),

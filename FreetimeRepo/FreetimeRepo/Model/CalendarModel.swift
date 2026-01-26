@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Calendar Day Model
 // Repräsentiert einen einzelnen Tag in der horizontalen Scroll-Ansicht
 struct CalendarDay: Identifiable, Equatable {
-    let id: UUID
+    let id: String
     
     // UI-Formatierte Strings
     let dayNumber: String       // z.B. "16"

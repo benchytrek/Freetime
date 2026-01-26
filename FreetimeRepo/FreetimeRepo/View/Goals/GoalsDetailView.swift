@@ -1,16 +1,11 @@
-//
-//  GoalsDetailView.swift
-//  FreetimeRepo
-//
-//  Created by Ben Chytrek on 10.01.26.
-//
-
 import SwiftUI
 
 // MARK: - GoalsDetailView (Swipe + Detail kombiniert)
 struct GoalsDetailView: View {
     @Binding var goals: [Goals]       // Alle Ziele (fürs Swipen)
-    @State var selectedGoalID: UUID   // Das aktuell angezeigte Ziel
+    
+    // FIX: Typ auf String geändert (war vorher UUID)
+    @State var selectedGoalID: String
     
     var body: some View {
         // 1. Der Swipe-Container (TabView)
@@ -22,10 +17,6 @@ struct GoalsDetailView: View {
                 // 2. ... und zeigen für jedes Ziel direkt die ScrollView an
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
-                        
-                        // Titel des Ziels -> HIER ENTFERNT, da er jetzt im Navigation Header steht
-                        // Damit er nicht doppelt angezeigt wird.
-                        // Der NavigationTitle übernimmt die Anzeige.
                         
                         // Fortschrittsanzeige Text
                         HStack {
@@ -162,6 +153,7 @@ struct GoalsDetailView_Previews: PreviewProvider {
     struct StateWrapper: View {
         @State var goals = sampleGoals
         var body: some View {
+            // FIX: sampleGoals hat jetzt String IDs, das passt also automatisch
             GoalsDetailView(goals: $goals, selectedGoalID: goals[0].id)
         }
     }

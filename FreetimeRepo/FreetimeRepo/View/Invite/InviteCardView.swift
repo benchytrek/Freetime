@@ -147,12 +147,12 @@ struct UserAvatar: View {
 
 // Preview
 #Preview {
-    let ben = User(id: UUID(), name: "Ben")
+    let ben = User(id: "user_ben", name: "Ben")
     
     VStack(spacing: 20) {
         // Test 1: Früh am Morgen (Ganz links)
         InviteCardView(invite: Invite(
-            id: UUID(),
+            id: "event-1",
             titel: "Titel",
             description: "Description",
             date: Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!,
@@ -164,7 +164,7 @@ struct UserAvatar: View {
         
         // Test 2: Mitten am Tag (Mitte)
         InviteCardView(invite: Invite(
-            id: UUID(),
+            id: "event-2",
             titel: "Mittagessen",
             description: "Pizza",
             date: Calendar.current.date(bySettingHour: 15, minute: 0, second: 0, of: Date())!,

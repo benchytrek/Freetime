@@ -79,7 +79,7 @@ struct CalendarData {
         let isToday = Calendar.current.isDateInToday(date)
         
         return CalendarDay(
-            id: UUID(),
+            id: "lol",
             dayNumber: dayNumber,
             weekday: weekday,
             fullDateId: dateId,

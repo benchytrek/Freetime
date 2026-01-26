@@ -1,10 +1,3 @@
-//
-//  GoalsView.swift
-//  FreetimeRepo
-//
-//  Created by Ben Chytrek on 10.01.26.
-//
-
 import SwiftUI
 
 struct GoalsView: View {
@@ -17,9 +10,8 @@ struct GoalsView: View {
                 VStack(spacing: 20) {
                     
                     ForEach($goals) { $goal in
-                        // HIER IST DER KORRIGIERTE LINK:
-                        // Wir rufen jetzt GoalsDetailView auf (die View, die den Swipe-Container enthält)
-                        // und übergeben ihr die komplette Liste ($goals) + die ID des angeklickten Ziels.
+                        // HIER WAR DER FEHLER: goal.id ist String, View erwartete UUID.
+                        // Nach dem Update von GoalsDetailView passt das jetzt wieder zusammen!
                         NavigationLink(destination: GoalsDetailView(goals: $goals, selectedGoalID: goal.id)) {
                             GoalCard(goal: $goal)
                         }
@@ -121,9 +113,6 @@ struct TaskRow: View {
     var color: Color
     
     var body: some View {
-        // Hier kein Button mehr, da die ganze Karte ein Link ist.
-        // Oder wir nutzen .onTapGesture, um Konflikte zu vermeiden.
-        // Einfachheitshalber zeigen wir es hier nur an.
         HStack(spacing: 12) {
             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                 .font(.title3)
@@ -142,6 +131,6 @@ struct TaskRow: View {
 struct GoalsView_Previews: PreviewProvider {
     static var previews: some View {
         GoalsView()
-            .preferredColorScheme(.dark) // Vorschau im Dark Mode testen
+            .preferredColorScheme(.dark)
     }
 }

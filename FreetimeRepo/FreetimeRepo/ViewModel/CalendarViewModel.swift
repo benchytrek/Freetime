@@ -15,7 +15,7 @@ class CalendarViewModel {
     var days: [CalendarDay] = []
     
     // NEU: Wir merken uns die ID von "Heute", um direkt dort hinzuspringen
-    var todayId: UUID?
+    var todayId: String?
     
     init() {
         loadData()
