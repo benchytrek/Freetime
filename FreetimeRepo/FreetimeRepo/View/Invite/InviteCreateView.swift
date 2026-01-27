@@ -62,7 +62,7 @@ struct InviteCreateView: View {
                                                 user: user,
                                                 isSelected: selectedUserIds.contains(user.id)
                                             ) {
-                                                toggleUser(user.id)
+                                                //toggleUser(user.id)
                                             }
                                         }
                                     }
@@ -220,7 +220,7 @@ struct InviteCreateView: View {
             }
         }
     }
-    
+    /*
     private func toggleUser(_ id: UUID) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             if selectedUserIds.contains(id) {
@@ -231,7 +231,7 @@ struct InviteCreateView: View {
             }
         }
     }
-    
+    */
     private func formatTime(_ value: Double) -> String {
         let totalMinutes = Int(value * 60)
         let hours = totalMinutes / 60

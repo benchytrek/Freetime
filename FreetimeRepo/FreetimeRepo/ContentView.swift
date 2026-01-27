@@ -14,10 +14,8 @@ struct ContentView: View {
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }
-            GoalsView()
-                .tabItem {
-                    Label("Goals", systemImage: "target")
-                }
+
+                
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
