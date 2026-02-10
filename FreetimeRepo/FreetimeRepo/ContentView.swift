@@ -14,11 +14,13 @@ struct ContentView: View {
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }
-
+            
                 
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person.circle")
+                    
+                    
                 }
         }//test
         .tint(Color.accentColor)
